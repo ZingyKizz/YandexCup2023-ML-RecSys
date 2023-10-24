@@ -1,4 +1,5 @@
 from torch import nn
+import torch
 from lib.const import NUM_TAGS
 
 
@@ -17,9 +18,9 @@ class Network(nn.Module):
         self.fc = nn.Linear(hidden_dim, num_classes)
 
     def forward(self, embeds):
-        x = [self.projector(v) for v in embeds]
+        x = [self.projector(x) for x in embeds]
         x = [v.mean(0).unsqueeze(0) for v in x]
-        x = self.bn(x)
+        x = self.bn(torch.cat(x, dim=0))
         x = self.lin(x)
         outs = self.fc(x)
         return outs

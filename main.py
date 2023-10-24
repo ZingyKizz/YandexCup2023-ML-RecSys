@@ -54,7 +54,7 @@ if __name__ == "__main__":
         test_dataset, batch_size=64, shuffle=False, collate_fn=collate_fn_test
     )
 
-    model = Network(input_dim=768, hidden_dim=16)
+    model = Network(input_dim=768, hidden_dim=768)
     criterion = nn.BCEWithLogitsLoss()
 
     epochs = 10
@@ -66,4 +66,6 @@ if __name__ == "__main__":
         train_epoch(model, train_dataloader, criterion, optimizer)
         score = validate_after_epoch(model, val_dataloader)
 
-    make_test_predictions(model, test_dataloader, path="predictions", suffix=score)
+    make_test_predictions(
+        model, test_dataloader, path="predictions", suffix=f"{score:.5f}"
+    )

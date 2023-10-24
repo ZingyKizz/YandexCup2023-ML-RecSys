@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 import torch
 import numpy as np
 from sklearn.metrics import average_precision_score
@@ -29,7 +29,7 @@ def train_epoch(model, loader, criterion, optimizer):
         if iteration % 100 == 0:
             print(
                 "   {} batch {} loss {}".format(
-                    datetime.now(), iteration + 1, running_loss
+                    dt.datetime.now(), iteration + 1, running_loss
                 )
             )
 
@@ -62,7 +62,7 @@ def validate_after_epoch(model, loader):
         yps.append(y_pred)
     score = average_precision_score(yts, yps)
     print(f"AveragePrecision: {score}")
-    return f"{score:.5f}"
+    return score
 
 
 def make_test_predictions(model, test_dataloader, path=None, suffix=None):
