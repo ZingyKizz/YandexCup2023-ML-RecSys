@@ -1,0 +1,2 @@
+NUM_TAGS = 256
+DEVICE = "cpu"
