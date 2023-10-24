@@ -46,8 +46,8 @@ def predict(model, loader):
         embeds = [x.to(DEVICE) for x in embeds]
         pred_logits = model(embeds)
         pred_probs = torch.sigmoid(pred_logits)
-        predictions.append(pred_probs.cpu().numpy())
-        track_idxs.append(track_idx.numpy())
+        predictions.append(pred_probs.cpu().detach().numpy())
+        track_idxs.append(track_idx.cpu().detach().numpy())
     predictions = np.vstack(predictions)
     track_idxs = np.vstack(track_idxs).ravel()
     return track_idxs, predictions
