@@ -78,5 +78,6 @@ def make_test_predictions(model, test_dataloader, path=None, suffix=None):
     else:
         name = "prediction.csv"
     if path is not None:
+        os.makedirs(path, exist_ok=True)
         name = os.path.join(path, name)
     predictions_df.to_csv(name, index=False)

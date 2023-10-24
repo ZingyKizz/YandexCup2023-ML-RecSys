@@ -20,7 +20,7 @@ from lib.model.net.baseline import Network
 from lib.model.utils import train_epoch, validate_after_epoch, make_test_predictions
 
 
-if __name__ == "__main__":
+def main():
     # s3 = S3Client(
     #     endpoint_url=S3_ENDPOINT_URL,
     #     region_name=S3_REGION_NAME,
@@ -43,7 +43,6 @@ if __name__ == "__main__":
     train_dataset = TaggingDataset(df_train, track_idx2embeds)
     val_dataset = TaggingDataset(df_val, track_idx2embeds)
     test_dataset = TaggingDataset(df_test, track_idx2embeds, testing=True)
-
     train_dataloader = DataLoader(
         train_dataset, batch_size=64, shuffle=True, collate_fn=collate_fn
     )
@@ -53,19 +52,19 @@ if __name__ == "__main__":
     test_dataloader = DataLoader(
         test_dataset, batch_size=64, shuffle=False, collate_fn=collate_fn_test
     )
-
     model = Network(input_dim=768, hidden_dim=768)
     criterion = nn.BCEWithLogitsLoss()
-
-    epochs = 10
+    epochs = 20
     model = model.to(DEVICE)
     criterion = criterion.to(DEVICE)
     optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
-
     for epoch in tqdm(range(epochs)):
         train_epoch(model, train_dataloader, criterion, optimizer)
         score = validate_after_epoch(model, val_dataloader)
-
     make_test_predictions(
         model, test_dataloader, path="predictions", suffix=f"{score:.5f}"
     )
+
+
+if __name__ == "__main__":
+    main()
