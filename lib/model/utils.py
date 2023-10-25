@@ -8,6 +8,12 @@ import os
 from lib.const import DEVICE
 
 
+def batch_to_device(embeds):
+    if isinstance(embeds, list):
+        return [x.to(DEVICE) for x in embeds]
+    return embeds.to(DEVICE)
+
+
 def train_epoch(model, loader, criterion, optimizer):
     model.train()
     running_loss = None
@@ -15,7 +21,7 @@ def train_epoch(model, loader, criterion, optimizer):
     for iteration, data in enumerate(loader):
         optimizer.zero_grad()
         track_idxs, embeds, target = data
-        embeds = [x.to(DEVICE) for x in embeds]
+        embeds = batch_to_device(embeds)
         target = target.to(DEVICE)
         pred_logits = model(embeds)
         ce_loss = criterion(pred_logits, target)
@@ -34,16 +40,14 @@ def train_epoch(model, loader, criterion, optimizer):
             )
 
 
-torch.no_grad()
-
-
+@torch.no_grad()
 def predict(model, loader):
     model.eval()
     track_idxs = []
     predictions = []
     for data in loader:
         track_idx, embeds = data
-        embeds = [x.to(DEVICE) for x in embeds]
+        embeds = batch_to_device(embeds)
         pred_logits = model(embeds)
         pred_probs = torch.sigmoid(pred_logits)
         predictions.append(pred_probs.cpu().detach().numpy())

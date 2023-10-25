@@ -25,19 +25,18 @@ class TaggingDataset(Dataset):
         return track_idx, embeds, target
 
 
-def collate_fn(b):
-    track_idxs = torch.from_numpy(np.vstack([x[0] for x in b]))
-    embeds = torch.nn.utils.rnn.pad_sequence(
-        [torch.from_numpy(x[1]) for x in b], batch_first=True
-    )
-    targets = np.vstack([x[2] for x in b])
-    targets = torch.from_numpy(targets)
-    return track_idxs, embeds, targets
+class Collator:
+    def __init__(self, max_len=None, testing=False):
+        self.testing = testing
+        self.max_len = max_len
 
-
-def collate_fn_test(b):
-    track_idxs = torch.from_numpy(np.vstack([x[0] for x in b]))
-    embeds = torch.nn.utils.rnn.pad_sequence(
-        [torch.from_numpy(x[1]) for x in b], batch_first=True
-    )
-    return track_idxs, embeds
+    def __call__(self, b):
+        track_idxs = torch.from_numpy(np.vstack([x[0] for x in b]))
+        embeds = torch.nn.utils.rnn.pad_sequence(
+            [torch.from_numpy(x[1]) for x in b], batch_first=True
+        )[:, : self.max_len, :]
+        if self.testing:
+            return track_idxs, embeds
+        targets = np.vstack([x[2] for x in b])
+        targets = torch.from_numpy(targets)
+        return track_idxs, embeds, targets

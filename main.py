@@ -10,13 +10,13 @@ from settings import (
 import os
 from lib.data.s3 import read_tag_data, read_track_embeddings
 from sklearn.model_selection import train_test_split
-from lib.data.dataset import TaggingDataset, collate_fn, collate_fn_test
+from lib.data.dataset import TaggingDataset, Collator
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from torch import nn
 import torch
 from lib.const import DEVICE
-from lib.model.net.baseline import Network
+from lib.model.net.baseline import Network, TransNetwork
 from lib.model.utils import train_epoch, validate_after_epoch, make_test_predictions
 
 
@@ -44,26 +44,32 @@ def main():
     val_dataset = TaggingDataset(df_val, track_idx2embeds)
     test_dataset = TaggingDataset(df_test, track_idx2embeds, testing=True)
     train_dataloader = DataLoader(
-        train_dataset, batch_size=64, shuffle=True, collate_fn=collate_fn
+        train_dataset, batch_size=64, shuffle=True, collate_fn=Collator()
     )
     val_dataloader = DataLoader(
-        val_dataset, batch_size=64, shuffle=True, collate_fn=collate_fn_test
+        val_dataset, batch_size=64, shuffle=True, collate_fn=Collator(testing=True)
     )
     test_dataloader = DataLoader(
-        test_dataset, batch_size=64, shuffle=False, collate_fn=collate_fn_test
+        test_dataset, batch_size=64, shuffle=False, collate_fn=Collator(testing=True)
     )
-    model = Network(input_dim=768, hidden_dim=768)
+    model = TransNetwork(input_dim=768, hidden_dim=512)
     criterion = nn.BCEWithLogitsLoss()
-    epochs = 20
+    epochs = 10
     model = model.to(DEVICE)
     criterion = criterion.to(DEVICE)
     optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
+    best_score = 0.23
     for epoch in tqdm(range(epochs)):
         train_epoch(model, train_dataloader, criterion, optimizer)
         score = validate_after_epoch(model, val_dataloader)
-    make_test_predictions(
-        model, test_dataloader, path="predictions", suffix=f"{score:.5f}"
-    )
+        if score > best_score:
+            best_score = score
+            make_test_predictions(
+                model,
+                test_dataloader,
+                path="predictions",
+                suffix=f"epoch_{epoch}_{score:.5f}",
+            )
 
 
 if __name__ == "__main__":
