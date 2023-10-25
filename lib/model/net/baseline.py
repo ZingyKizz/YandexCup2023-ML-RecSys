@@ -62,7 +62,7 @@ class TransNetwork(nn.Module):
         self.fc = nn.Linear(hidden_dim, num_classes)
 
     def forward(self, embeds, padding_mask=None):
-        x = self.encoder_block(embeds, padding_mask)
+        x = self.encoder_block(embeds, src_key_padding_mask=padding_mask)
         x = self.mp(x)
         x = self.bn(x)
         x = self.lin(x)
