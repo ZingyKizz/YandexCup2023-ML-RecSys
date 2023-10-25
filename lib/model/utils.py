@@ -31,7 +31,7 @@ def train_epoch(model, loader, criterion, optimizer):
         if running_loss is None:
             running_loss = ce_loss.item()
         else:
-            running_loss = alpha * ce_loss.item() + (1 - alpha) * ce_loss.item()
+            running_loss = alpha * running_loss + (1 - alpha) * ce_loss.item()
         if iteration % 100 == 0:
             print(
                 "   {} batch {} loss {}".format(
