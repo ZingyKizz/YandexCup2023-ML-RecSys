@@ -16,19 +16,13 @@ from tqdm import tqdm
 from torch import nn
 import torch
 from lib.const import DEVICE
-from lib.model.net.baseline import Network, TransNetwork
+from lib.model.net.baseline import TransNetwork
 from lib.model.utils import train_epoch, validate_after_epoch, make_test_predictions
 
 
 def main():
-    # s3 = S3Client(
-    #     endpoint_url=S3_ENDPOINT_URL,
-    #     region_name=S3_REGION_NAME,
-    #     aws_access_key_id=S3_AWS_ACCESS_KEY_ID,
-    #     aws_secret_access_key=S3_AWS_SECRET_ACCESS_KEY,
-    # )
     path = (
-        "/Users/yaroslav.hnykov/Desktop/Study/VCS/YandexCUP2023/ML/RecSys/input_data/"
+        "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
     )
     data = read_tag_data(paths=[os.path.join(path, "data.zip")])
     df_train, df_val = train_test_split(data["train"], test_size=0.1, random_state=11)
@@ -43,22 +37,40 @@ def main():
     train_dataset = TaggingDataset(df_train, track_idx2embeds)
     val_dataset = TaggingDataset(df_val, track_idx2embeds)
     test_dataset = TaggingDataset(df_test, track_idx2embeds, testing=True)
+
     train_dataloader = DataLoader(
-        train_dataset, batch_size=64, shuffle=True, collate_fn=Collator()
+        train_dataset,
+        batch_size=64,
+        shuffle=True,
+        collate_fn=Collator(max_len=100),
+        drop_last=False,
     )
     val_dataloader = DataLoader(
-        val_dataset, batch_size=64, shuffle=True, collate_fn=Collator(testing=True)
+        val_dataset,
+        batch_size=64,
+        shuffle=True,
+        collate_fn=Collator(max_len=100, testing=True),
+        drop_last=False,
     )
     test_dataloader = DataLoader(
-        test_dataset, batch_size=64, shuffle=False, collate_fn=Collator(testing=True)
+        test_dataset,
+        batch_size=64,
+        shuffle=False,
+        collate_fn=Collator(max_len=100, testing=True),
+        drop_last=False,
     )
-    model = TransNetwork(input_dim=768, hidden_dim=512)
+
+    model = TransNetwork(
+        input_dim=768, hidden_dim=1024, n_encoder_layers=6, attention_heads=6
+    )
     criterion = nn.BCEWithLogitsLoss()
-    epochs = 10
+
+    epochs = 50
     model = model.to(DEVICE)
     criterion = criterion.to(DEVICE)
-    optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
-    best_score = 0.23
+    optimizer = torch.optim.AdamW(model.parameters(), lr=2e-5)
+
+    best_score = 0.25
     for epoch in tqdm(range(epochs)):
         train_epoch(model, train_dataloader, criterion, optimizer)
         score = validate_after_epoch(model, val_dataloader)

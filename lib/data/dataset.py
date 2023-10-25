@@ -32,11 +32,17 @@ class Collator:
 
     def __call__(self, b):
         track_idxs = torch.from_numpy(np.vstack([x[0] for x in b]))
-        embeds = torch.nn.utils.rnn.pad_sequence(
-            [torch.from_numpy(x[1]) for x in b], batch_first=True
-        )[:, : self.max_len, :]
+        embeds = [torch.from_numpy(x[1][: self.max_len]) for x in b]
+        padding_mask = self._create_padding_mask(embeds)
+        embeds = torch.nn.utils.rnn.pad_sequence(embeds, batch_first=True)
         if self.testing:
-            return track_idxs, embeds
+            return track_idxs, (embeds, padding_mask)
         targets = np.vstack([x[2] for x in b])
         targets = torch.from_numpy(targets)
-        return track_idxs, embeds, targets
+        return track_idxs, (embeds, padding_mask), targets
+
+    @staticmethod
+    def _create_padding_mask(embeds):
+        lens = torch.tensor([len(e) for e in embeds])
+        padding_mask = torch.arange(max(lens))[None, :] >= lens[:, None]
+        return padding_mask

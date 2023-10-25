@@ -20,10 +20,11 @@ def train_epoch(model, loader, criterion, optimizer):
     alpha = 0.8
     for iteration, data in enumerate(loader):
         optimizer.zero_grad()
-        track_idxs, embeds, target = data
+        track_idxs, (embeds, padding_mask), target = data
         embeds = batch_to_device(embeds)
+        padding_mask = batch_to_device(padding_mask)
         target = target.to(DEVICE)
-        pred_logits = model(embeds)
+        pred_logits = model(embeds, padding_mask=padding_mask)
         ce_loss = criterion(pred_logits, target)
         ce_loss.backward()
         optimizer.step()
@@ -46,9 +47,10 @@ def predict(model, loader):
     track_idxs = []
     predictions = []
     for data in loader:
-        track_idx, embeds = data
+        track_idx, (embeds, padding_mask) = data
         embeds = batch_to_device(embeds)
-        pred_logits = model(embeds)
+        padding_mask = batch_to_device(padding_mask)
+        pred_logits = model(embeds, padding_mask=padding_mask)
         pred_probs = torch.sigmoid(pred_logits)
         predictions.append(pred_probs.cpu().detach().numpy())
         track_idxs.append(track_idx.cpu().detach().numpy())
