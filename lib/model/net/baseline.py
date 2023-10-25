@@ -4,7 +4,7 @@ from lib.const import NUM_TAGS
 
 
 class MeanPooling(nn.Module):
-    def forward(self, x, padding_mask: torch.tensor):
+    def forward(self, x, padding_mask):
         input_mask_expanded = (
             torch.logical_not(padding_mask).unsqueeze(-1).expand(x.size()).float()
         )
@@ -63,7 +63,7 @@ class TransNetwork(nn.Module):
 
     def forward(self, embeds, padding_mask=None):
         x = self.encoder_block(embeds, src_key_padding_mask=padding_mask)
-        x = self.mp(x)
+        x = self.mp(x, padding_mask=padding_mask)
         x = self.bn(x)
         x = self.lin(x)
         outs = self.fc(x)
