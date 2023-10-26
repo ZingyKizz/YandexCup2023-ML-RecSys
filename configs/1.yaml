@@ -1,7 +1,7 @@
 name: "1"
 
 seed: 11
-data_path: "/Users/yaroslav.hnykov/Desktop/Study/VCS/YandexCUP2023/ML/RecSys/input_data/"
+data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
 val_size: 0.02
 
 batch_size: 64
@@ -14,12 +14,12 @@ model_params: {
     encoder_cfg: {
         vocab_size: 128100,
         hidden_size: 768,
-        num_hidden_layers: 4,
+        num_hidden_layers: 2,
         num_attention_heads: 4,
         intermediate_size: 3072,
         hidden_act: "gelu",
-        hidden_dropout_prob: 0.01,
-        attention_probs_dropout_prob: 0.01,
+        hidden_dropout_prob: 0.001,
+        attention_probs_dropout_prob: 0.001,
         max_position_embeddings: 100,
         type_vocab_size: 0,
         initializer_range: 0.02,
@@ -44,11 +44,11 @@ optimizer_params: {}
 
 scheduler: training.scheduler.Scheduler
 scheduler_params: {
-  num_training_steps: 2500,
+  num_training_steps: 42000,
   scheduler_name: "get_linear_schedule_with_warmup"
 }
 
 
 n_epochs: 60
 
-best_score: 0.27
+best_score: 0.30
