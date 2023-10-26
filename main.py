@@ -1,36 +1,29 @@
-from lib.data.s3 import S3Client
-from settings import (
-    S3_BUCKET_NAME,
-    S3_REGION_NAME,
-    S3_ENDPOINT_URL,
-    S3_AWS_ACCESS_KEY_ID,
-    S3_AWS_SECRET_ACCESS_KEY,
-    S3_KEY_BASE,
-)
 import os
 from lib.data.s3 import read_tag_data, read_track_embeddings
 from sklearn.model_selection import train_test_split
 from lib.data.dataset import TaggingDataset, Collator
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from torch import nn
-import torch
 from lib.const import DEVICE
-from lib.model.net.baseline import TransNetwork2
-from lib.model.utils import train_epoch, validate_after_epoch, make_test_predictions
+from lib.training.utils import train_epoch, validate_after_epoch, make_test_predictions
+from lib.utils import seed_everything, load_config, make_instance
 
 
-def main():
-    path = (
-        "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
+def main(config_path):
+    cfg = load_config(config_path)
+
+    seed_everything(cfg["seed"])
+
+    data = read_tag_data(paths=[os.path.join(cfg["data_path"], "data.zip")])
+    df_train, df_val = train_test_split(
+        data["train"], test_size=cfg["val_size"], random_state=cfg["seed"]
     )
-    data = read_tag_data(paths=[os.path.join(path, "data.zip")])
-    df_train, df_val = train_test_split(data["train"], test_size=0.1, random_state=11)
     df_test = data["test"]
     del data
+
     track_idx2embeds = read_track_embeddings(
         paths=[
-            os.path.join(path, "track_embeddings", f"dir_00{i}.zip")
+            os.path.join(cfg["data_path"], "track_embeddings", f"dir_00{i}.zip")
             for i in range(1, 9)
         ],
     )
@@ -40,37 +33,45 @@ def main():
 
     train_dataloader = DataLoader(
         train_dataset,
-        batch_size=64,
+        batch_size=cfg["batch_size"],
         shuffle=True,
-        collate_fn=Collator(max_len=100),
+        collate_fn=Collator(max_len=cfg["max_len"]),
         drop_last=False,
     )
     val_dataloader = DataLoader(
         val_dataset,
-        batch_size=64,
-        shuffle=True,
-        collate_fn=Collator(max_len=100, testing=True),
+        batch_size=cfg["batch_size"],
+        shuffle=False,
+        collate_fn=Collator(max_len=cfg["max_len"], testing=True),
         drop_last=False,
     )
     test_dataloader = DataLoader(
         test_dataset,
-        batch_size=64,
+        batch_size=cfg["batch_size"],
         shuffle=False,
-        collate_fn=Collator(max_len=100, testing=True),
+        collate_fn=Collator(max_len=cfg["max_len"], testing=True),
         drop_last=False,
     )
 
-    model = TransNetwork2(input_dim=768, hidden_dim=512)
-    criterion = nn.BCEWithLogitsLoss()
+    model = make_instance(cfg["model"], **cfg["model_params"])
+    criterion = make_instance(cfg["criterion"])
 
-    epochs = 50
+    epochs = cfg["n_epochs"]
     model = model.to(DEVICE)
     criterion = criterion.to(DEVICE)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=2e-5)
+    optimizer = make_instance(
+        cfg["optimizer"], model.parameters(), **cfg["optimizer_params"]
+    )
+    if "scheduler" in cfg:
+        scheduler = make_instance(
+            cfg["scheduler"], optimizer, **cfg["scheduler_params"]
+        )
+    else:
+        scheduler = None
 
-    best_score = 0.25
+    best_score = cfg["best_score"]
     for epoch in tqdm(range(epochs)):
-        train_epoch(model, train_dataloader, criterion, optimizer)
+        train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
         score = validate_after_epoch(model, val_dataloader)
         if score > best_score:
             best_score = score
@@ -83,4 +84,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main("configs/cfg.yaml")

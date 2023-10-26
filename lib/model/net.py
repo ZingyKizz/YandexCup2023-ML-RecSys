@@ -2,6 +2,7 @@ from torch import nn
 import torch
 from lib.const import NUM_TAGS
 from transformers.models.bert import BertModel, BertConfig
+from transformers.models.deberta_v2 import DebertaV2Model, DebertaV2Config
 
 
 class MeanPooling(nn.Module):
@@ -135,6 +136,54 @@ class TransNetwork2(nn.Module):
         self.bn = nn.LayerNorm(input_dim)
         self.mp = MeanPooling()
         self.encoder = BertModel(BertConfig())
+        self.lin = ProjectionHead(input_dim, hidden_dim)
+        self.fc = nn.Linear(hidden_dim, num_classes)
+
+    def forward(self, embeds, attention_mask=None):
+        x = self.encoder(
+            inputs_embeds=embeds, attention_mask=attention_mask
+        ).last_hidden_state
+        x = self.mp(x, attention_mask=attention_mask)
+        x = self.bn(x)
+        x = self.lin(x)
+        outs = self.fc(x)
+        return outs
+
+
+class TransNetwork3(nn.Module):
+    def __init__(
+        self,
+        num_classes=NUM_TAGS,
+        input_dim=768,
+        hidden_dim=512,
+    ):
+        super().__init__()
+        self.num_classes = num_classes
+        self.bn = nn.LayerNorm(input_dim)
+        self.mp = MeanPooling()
+        self.encoder = DebertaV2Model(
+            DebertaV2Config(
+                vocab_size=128100,
+                hidden_size=768,
+                num_hidden_layers=12,
+                num_attention_heads=12,
+                intermediate_size=3072,
+                hidden_act="gelu",
+                hidden_dropout_prob=0.1,
+                attention_probs_dropout_prob=0.1,
+                max_position_embeddings=512,
+                type_vocab_size=0,
+                initializer_range=0.02,
+                layer_norm_eps=1e-7,
+                relative_attention=False,
+                max_relative_positions=-1,
+                pad_token_id=0,
+                position_biased_input=True,
+                pos_att_type=None,
+                pooler_dropout=0,
+                pooler_hidden_act="gelu",
+            )
+        )
         self.lin = ProjectionHead(input_dim, hidden_dim)
         self.fc = nn.Linear(hidden_dim, num_classes)
 
