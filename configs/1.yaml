@@ -1,21 +1,46 @@
-name: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
+name: "1"
 
 seed: 11
 data_path: "/Users/yaroslav.hnykov/Desktop/Study/VCS/YandexCUP2023/ML/RecSys/input_data/"
-val_size: 0.1
+val_size: 0.02
 
 batch_size: 64
 max_len: 100
 
 model: model.net.TransNetwork3
-model_params: {}
+model_params: {
+    input_dim: 768,
+    hidden_dim: 512,
+    encoder_cfg: {
+        vocab_size: 128100,
+        hidden_size: 768,
+        num_hidden_layers: 4,
+        num_attention_heads: 4,
+        intermediate_size: 3072,
+        hidden_act: "gelu",
+        hidden_dropout_prob: 0.01,
+        attention_probs_dropout_prob: 0.01,
+        max_position_embeddings: 100,
+        type_vocab_size: 0,
+        initializer_range: 0.02,
+        layer_norm_eps: 0.0000001,
+        relative_attention: true,
+        max_relative_positions: -1,
+        pad_token_id: 0,
+        position_biased_input: true,
+        pos_att_type: null,
+        pooler_dropout: 0,
+        pooler_hidden_act: "gelu"
+    }
+}
+
 
 criterion: training.criterion.BCEWithLogitsLoss
 
 optimizer: training.optimizer.AdamW
-optimizer_params: {
-  lr: 0.00001
-}
+lr: 0.000005
+lr_alpha: 100
+optimizer_params: {}
 
 scheduler: training.scheduler.Scheduler
 scheduler_params: {
@@ -24,6 +49,6 @@ scheduler_params: {
 }
 
 
-n_epochs: 10
+n_epochs: 60
 
-best_score: 0.25
+best_score: 0.27

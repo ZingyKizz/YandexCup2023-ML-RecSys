@@ -156,7 +156,9 @@ class TransNetwork3(nn.Module):
         self.bn = nn.LayerNorm(input_dim)
         self.mp = MeanPooling()
         self.encoder = DebertaV2Model(DebertaV2Config(**encoder_cfg))
-        self.lin = ProjectionHead(input_dim, hidden_dim, dropout=0, residual_connection=False)
+        self.lin = ProjectionHead(
+            input_dim, hidden_dim, dropout=0, residual_connection=False
+        )
         self.fc = nn.Linear(hidden_dim, num_classes)
 
     def forward(self, embeds, attention_mask=None):

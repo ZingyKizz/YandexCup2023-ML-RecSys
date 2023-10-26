@@ -7,6 +7,7 @@ from tqdm import tqdm
 from lib.const import DEVICE
 from lib.training.utils import train_epoch, validate_after_epoch, make_test_predictions
 from lib.utils import seed_everything, load_config, make_instance
+from lib.training.optimizer import get_grouped_parameters
 
 
 def main(config_path):
@@ -61,8 +62,11 @@ def main(config_path):
     model = model.to(DEVICE)
     criterion = criterion.to(DEVICE)
     optimizer = make_instance(
-        cfg["optimizer"], model.parameters(), **cfg["optimizer_params"]
+        cfg["optimizer"],
+        get_grouped_parameters(model, cfg["lr"], cfg["lr_alpha"]),
+        **cfg["optimizer_params"]
     )
+
     if "scheduler" in cfg:
         scheduler = make_instance(
             cfg["scheduler"], optimizer, **cfg["scheduler_params"]
