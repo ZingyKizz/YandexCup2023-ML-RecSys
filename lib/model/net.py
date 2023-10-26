@@ -156,7 +156,7 @@ class TransNetwork3(nn.Module):
         self.bn = nn.LayerNorm(input_dim)
         self.mp = MeanPooling()
         self.encoder = DebertaV2Model(DebertaV2Config(**encoder_cfg))
-        self.lin = ProjectionHead(input_dim, hidden_dim)
+        self.lin = ProjectionHead(input_dim, hidden_dim, dropout=0, residual_connection=False)
         self.fc = nn.Linear(hidden_dim, num_classes)
 
     def forward(self, embeds, attention_mask=None):
@@ -164,7 +164,6 @@ class TransNetwork3(nn.Module):
             inputs_embeds=embeds, attention_mask=attention_mask
         ).last_hidden_state
         x = self.mp(x, attention_mask=attention_mask)
-        x = self.bn(x)
         x = self.lin(x)
         outs = self.fc(x)
         return outs
