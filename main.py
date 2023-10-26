@@ -79,7 +79,7 @@ def main(config_path):
         train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
         score = validate_after_epoch(model, val_dataloader)
         if score > best_score:
-            best_score = score
+            # best_score = score
             make_test_predictions(
                 model,
                 test_dataloader,
