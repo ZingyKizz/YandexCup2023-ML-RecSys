@@ -14,20 +14,22 @@ def batch_to_device(embeds):
     return embeds.to(DEVICE)
 
 
-def train_epoch(model, loader, criterion, optimizer):
+def train_epoch(model, loader, criterion, optimizer, scheduler=None):
     model.train()
     running_loss = None
     alpha = 0.8
     for iteration, data in enumerate(loader):
         optimizer.zero_grad()
-        track_idxs, (embeds, padding_mask), target = data
+        track_idxs, (embeds, attention_mask), target = data
         embeds = batch_to_device(embeds)
-        padding_mask = batch_to_device(padding_mask)
+        attention_mask = batch_to_device(attention_mask)
         target = target.to(DEVICE)
-        pred_logits = model(embeds, padding_mask=padding_mask)
+        pred_logits = model(embeds, attention_mask=attention_mask)
         ce_loss = criterion(pred_logits, target)
         ce_loss.backward()
         optimizer.step()
+        if scheduler is not None:
+            scheduler.step()
 
         if running_loss is None:
             running_loss = ce_loss.item()
@@ -47,10 +49,10 @@ def predict(model, loader):
     track_idxs = []
     predictions = []
     for data in loader:
-        track_idx, (embeds, padding_mask) = data
+        track_idx, (embeds, attention_mask) = data
         embeds = batch_to_device(embeds)
-        padding_mask = batch_to_device(padding_mask)
-        pred_logits = model(embeds, padding_mask=padding_mask)
+        attention_mask = batch_to_device(attention_mask)
+        pred_logits = model(embeds, attention_mask=attention_mask)
         pred_probs = torch.sigmoid(pred_logits)
         predictions.append(pred_probs.cpu().detach().numpy())
         track_idxs.append(track_idx.cpu().detach().numpy())

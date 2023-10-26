@@ -16,7 +16,7 @@ from tqdm import tqdm
 from torch import nn
 import torch
 from lib.const import DEVICE
-from lib.model.net.baseline import TransNetwork1
+from lib.model.net.baseline import TransNetwork2
 from lib.model.utils import train_epoch, validate_after_epoch, make_test_predictions
 
 
@@ -42,33 +42,31 @@ def main():
         train_dataset,
         batch_size=64,
         shuffle=True,
-        collate_fn=Collator(max_len=50),
+        collate_fn=Collator(max_len=100),
         drop_last=False,
     )
     val_dataloader = DataLoader(
         val_dataset,
         batch_size=64,
         shuffle=True,
-        collate_fn=Collator(max_len=50, testing=True),
+        collate_fn=Collator(max_len=100, testing=True),
         drop_last=False,
     )
     test_dataloader = DataLoader(
         test_dataset,
         batch_size=64,
         shuffle=False,
-        collate_fn=Collator(max_len=50, testing=True),
+        collate_fn=Collator(max_len=100, testing=True),
         drop_last=False,
     )
 
-    model = TransNetwork1(
-        input_dim=768, hidden_dim=1024, n_encoder_layers=6, attention_heads=6
-    )
+    model = TransNetwork2(input_dim=768, hidden_dim=512)
     criterion = nn.BCEWithLogitsLoss()
 
     epochs = 50
     model = model.to(DEVICE)
     criterion = criterion.to(DEVICE)
-    optimizer = torch.optim.Adam(model.parameters(), lr=2e-5)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=2e-5)
 
     best_score = 0.25
     for epoch in tqdm(range(epochs)):
