@@ -11,6 +11,7 @@ from lib.utils import seed_everything, load_config, make_instance
 
 def main(config_path):
     cfg = load_config(config_path)
+    cfg_name = cfg["name"]
 
     seed_everything(cfg["seed"])
 
@@ -79,9 +80,9 @@ def main(config_path):
                 model,
                 test_dataloader,
                 path="predictions",
-                suffix=f"epoch_{epoch}_{score:.5f}",
+                suffix=f"{cfg_name}__epoch_{epoch}_{score:.5f}",
             )
 
 
 if __name__ == "__main__":
-    main("configs/cfg.yaml")
+    main("configs/1.yaml")
