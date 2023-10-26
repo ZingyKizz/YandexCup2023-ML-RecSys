@@ -139,7 +139,9 @@ class TransNetwork2(nn.Module):
         self.fc = nn.Linear(hidden_dim, num_classes)
 
     def forward(self, embeds, attention_mask=None):
-        x = self.encoder(inputs_embeds=embeds, attention_mask=attention_mask).last_hidden_state
+        x = self.encoder(
+            inputs_embeds=embeds, attention_mask=attention_mask
+        ).last_hidden_state
         x = self.mp(x, attention_mask=attention_mask)
         x = self.bn(x)
         x = self.lin(x)
