@@ -17,9 +17,13 @@ def main(config_path):
     seed_everything(cfg["seed"])
 
     data = read_tag_data(paths=[os.path.join(cfg["data_path"], "data.zip")])
-    df_train, df_val = train_test_split(
-        data["train"], test_size=cfg["val_size"], random_state=cfg["seed"]
-    )
+    df_train = data["train"]
+
+    has_validation = cfg["val_size"] > 0
+    if has_validation:
+        df_train, df_val = train_test_split(
+            df_train, test_size=cfg["val_size"], random_state=cfg["seed"]
+        )
     df_test = data["test"]
     del data
 
@@ -30,7 +34,9 @@ def main(config_path):
         ],
     )
     train_dataset = TaggingDataset(df_train, track_idx2embeds)
-    val_dataset = TaggingDataset(df_val, track_idx2embeds)
+    val_dataset = TaggingDataset(
+        df_val if has_validation else df_train, track_idx2embeds
+    )
     test_dataset = TaggingDataset(df_test, track_idx2embeds, testing=True)
 
     train_dataloader = DataLoader(
@@ -64,7 +70,7 @@ def main(config_path):
     optimizer = make_instance(
         cfg["optimizer"],
         get_grouped_parameters(model, cfg["lr"], cfg["lr_alpha"]),
-        **cfg["optimizer_params"]
+        **cfg["optimizer_params"],
     )
 
     if "scheduler" in cfg:
@@ -89,4 +95,4 @@ def main(config_path):
 
 
 if __name__ == "__main__":
-    main("configs/1.yaml")
+    main("configs/3.yaml")
