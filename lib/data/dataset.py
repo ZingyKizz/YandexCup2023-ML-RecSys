@@ -49,13 +49,15 @@ class Collator:
         return attention_mask
 
 
-def make_dataloader(df, track_idx2embeds, cfg, testing=False):
-    dataset = TaggingDataset(df, track_idx2embeds)
+def make_dataloader(
+    df, track_idx2embeds, cfg, dataset_testing=False, collator_testing=False
+):
+    dataset = TaggingDataset(df, track_idx2embeds, testing=dataset_testing)
     dataloader = DataLoader(
         dataset,
         batch_size=cfg["batch_size"],
-        shuffle=not testing,
-        collate_fn=Collator(max_len=cfg["max_len"], testing=testing),
+        shuffle=not dataset_testing,
+        collate_fn=Collator(max_len=cfg["max_len"], testing=collator_testing),
         drop_last=False,
     )
     return dataloader
@@ -68,6 +70,18 @@ def cross_val_split(df, track_idx2embeds, cfg):
         train_df = df.iloc[train_indices]
         val_df = df.iloc[val_indices]
         yield (
-            make_dataloader(train_df, track_idx2embeds, cfg),
-            make_dataloader(val_df, track_idx2embeds, cfg, testing=True),
+            make_dataloader(
+                train_df,
+                track_idx2embeds,
+                cfg,
+                dataset_testing=False,
+                collator_testing=False,
+            ),
+            make_dataloader(
+                val_df,
+                track_idx2embeds,
+                cfg,
+                dataset_testing=False,
+                collator_testing=True,
+            ),
         )

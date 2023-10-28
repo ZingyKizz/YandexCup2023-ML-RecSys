@@ -2,9 +2,9 @@ name: "4"
 
 seed: 11
 data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
-n_splits: 4
+n_splits: 3
 
-batch_size: 128
+batch_size: 64
 max_len: 128
 
 model: model.net.TransNetwork3
@@ -36,17 +36,17 @@ model_params: {
 criterion: training.criterion.BCEWithLogitsLoss
 
 optimizer: training.optimizer.AdamW
-lr: 0.000005
+lr: 0.00001
 lr_alpha: 20
 optimizer_params: {}
 
 scheduler: training.scheduler.Scheduler
 scheduler_params: {
-  num_training_steps: 5000,
+  num_training_steps: 10000,
   scheduler_name: "get_cosine_with_hard_restarts_schedule_with_warmup"
 }
 
 
 n_epochs: 20
 
-best_score: 0.28
+best_score: 0.17

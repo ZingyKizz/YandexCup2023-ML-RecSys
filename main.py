@@ -35,7 +35,13 @@ def main(config_path):
     tag_data, track_idx2embeds = load_data(cfg)
 
     cv = cross_val_split(tag_data["train"], track_idx2embeds, cfg)
-    test_dataloader = make_dataloader(tag_data["test"], track_idx2embeds, cfg, testing=True)
+    test_dataloader = make_dataloader(
+        tag_data["test"],
+        track_idx2embeds,
+        cfg,
+        dataset_testing=True,
+        collator_testing=True,
+    )
     min_val_score = cfg["best_score"]
     has_predict = False
     for fold_idx, (train_dataloader, val_dataloader) in enumerate(cv):
@@ -50,13 +56,13 @@ def main(config_path):
                     suffix=f"cfg={cfg_name}__fold_idx={fold_idx}__epoch={epoch}__score={score:.5f}",
                 )
                 has_predict = True
-    if not has_predict:
-        make_test_predictions(
-            model,
-            test_dataloader,
-            path="predictions",
-            suffix=f"cfg={cfg_name}__fold_idx={fold_idx}__epoch={epoch}__score={score:.5f}",
-    )
+        if not has_predict:
+            make_test_predictions(
+                model,
+                test_dataloader,
+                path="predictions",
+                suffix=f"cfg={cfg_name}__fold_idx={fold_idx}__epoch={epoch}__score={score:.5f}",
+            )
 
 
 if __name__ == "__main__":
