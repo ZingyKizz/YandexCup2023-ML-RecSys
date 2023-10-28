@@ -1,6 +1,7 @@
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 import numpy as np
+from sklearn.model_selection import KFold
 from lib.const import NUM_TAGS
 
 
@@ -46,3 +47,27 @@ class Collator:
         lens = torch.tensor([len(e) for e in embeds])
         attention_mask = (torch.arange(max(lens))[None, :] < lens[:, None]).float()
         return attention_mask
+
+
+def make_dataloader(df, track_idx2embeds, cfg, testing=False):
+    dataset = TaggingDataset(df, track_idx2embeds)
+    dataloader = DataLoader(
+        dataset,
+        batch_size=cfg["batch_size"],
+        shuffle=False if testing else True,
+        collate_fn=Collator(max_len=cfg["max_len"], testing=testing),
+        drop_last=False,
+    )
+    return dataloader
+
+
+def cross_val_split(df, track_idx2embeds, cfg):
+    for train_indices, val_indices in KFold(
+        n_splits=cfg["n_splits"], shuffle=True, random_state=cfg["seed"]
+    ).split(df):
+        train_df = df.iloc[train_indices]
+        val_df = df.iloc[val_indices]
+        yield (
+            make_dataloader(train_df, track_idx2embeds, cfg),
+            make_dataloader(val_df, track_idx2embeds, cfg),
+        )

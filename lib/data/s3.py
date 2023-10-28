@@ -3,6 +3,7 @@ import zipfile
 import numpy as np
 import pandas as pd
 import io
+import os
 
 
 class S3Client:
@@ -47,7 +48,7 @@ def s3_objects(s3_client, bucket_name, keys, paths):
             yield io.BytesIO(s3_object)
 
 
-def read_track_embeddings(s3_client=None, bucket_name=None, keys=None, paths=None):
+def load_track_embeddings(s3_client=None, bucket_name=None, keys=None, paths=None):
     track_idx2embeds = {}
     for s3_object in s3_objects(s3_client, bucket_name, keys, paths):
         with zipfile.ZipFile(s3_object) as zf:
@@ -60,7 +61,7 @@ def read_track_embeddings(s3_client=None, bucket_name=None, keys=None, paths=Non
     return track_idx2embeds
 
 
-def read_tag_data(s3_client=None, bucket_name=None, keys=None, paths=None):
+def load_tag_data(s3_client=None, bucket_name=None, keys=None, paths=None):
     res = {}
     for s3_object in s3_objects(s3_client, bucket_name, keys, paths):
         with zipfile.ZipFile(s3_object) as zf:
@@ -69,3 +70,14 @@ def read_tag_data(s3_client=None, bucket_name=None, keys=None, paths=None):
                     with zf.open(file) as f:
                         res[extract_name(f)] = pd.read_csv(f)
     return res
+
+
+def load_data(cfg):
+    tag_data = load_tag_data(paths=[os.path.join(cfg["data_path"], "data.zip")])
+    track_idx2embeds = load_track_embeddings(
+        paths=[
+            os.path.join(cfg["data_path"], "track_embeddings", f"dir_00{i}.zip")
+            for i in range(1, 9)
+        ],
+    )
+    return tag_data, track_idx2embeds

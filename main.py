@@ -1,13 +1,10 @@
-import os
-from lib.data.s3 import read_tag_data, read_track_embeddings
-from sklearn.model_selection import train_test_split
-from lib.data.dataset import TaggingDataset, Collator
-from torch.utils.data import DataLoader
+from lib.data.s3 import load_data
 from tqdm import tqdm
 from lib.const import DEVICE
 from lib.training.utils import train_epoch, validate_after_epoch, make_test_predictions
 from lib.utils import seed_everything, load_config, make_instance
 from lib.training.optimizer import get_grouped_parameters
+from lib.data.dataset import cross_val_split, make_dataloader
 
 
 def main(config_path):
@@ -15,51 +12,6 @@ def main(config_path):
     cfg_name = cfg["name"]
 
     seed_everything(cfg["seed"])
-
-    data = read_tag_data(paths=[os.path.join(cfg["data_path"], "data.zip")])
-    df_train = data["train"]
-
-    has_validation = cfg["val_size"] > 0
-    if has_validation:
-        df_train, df_val = train_test_split(
-            df_train, test_size=cfg["val_size"], random_state=cfg["seed"]
-        )
-    df_test = data["test"]
-    del data
-
-    track_idx2embeds = read_track_embeddings(
-        paths=[
-            os.path.join(cfg["data_path"], "track_embeddings", f"dir_00{i}.zip")
-            for i in range(1, 9)
-        ],
-    )
-    train_dataset = TaggingDataset(df_train, track_idx2embeds)
-    val_dataset = TaggingDataset(
-        df_val if has_validation else df_train, track_idx2embeds
-    )
-    test_dataset = TaggingDataset(df_test, track_idx2embeds, testing=True)
-
-    train_dataloader = DataLoader(
-        train_dataset,
-        batch_size=cfg["batch_size"],
-        shuffle=True,
-        collate_fn=Collator(max_len=cfg["max_len"]),
-        drop_last=False,
-    )
-    val_dataloader = DataLoader(
-        val_dataset,
-        batch_size=cfg["batch_size"],
-        shuffle=False,
-        collate_fn=Collator(max_len=cfg["max_len"], testing=True),
-        drop_last=False,
-    )
-    test_dataloader = DataLoader(
-        test_dataset,
-        batch_size=cfg["batch_size"],
-        shuffle=False,
-        collate_fn=Collator(max_len=cfg["max_len"], testing=True),
-        drop_last=False,
-    )
 
     model = make_instance(cfg["model"], **cfg["model_params"])
     criterion = make_instance(cfg["criterion"])
@@ -80,18 +32,22 @@ def main(config_path):
     else:
         scheduler = None
 
-    best_score = cfg["best_score"]
-    for epoch in tqdm(range(epochs)):
-        train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
-        score = validate_after_epoch(model, val_dataloader)
-        if score > best_score:
-            # best_score = score
-            make_test_predictions(
-                model,
-                test_dataloader,
-                path="predictions",
-                suffix=f"{cfg_name}__epoch_{epoch}_{score:.5f}",
-            )
+    tag_data, track_idx2embeds = load_data(cfg)
+
+    cv = cross_val_split(tag_data["train"], track_idx2embeds, cfg)
+    test_dataloader = make_dataloader(tag_data["test"], track_idx2embeds, cfg, testing=True)
+    min_val_score = cfg["best_score"]
+    for fold_idx, (train_dataloader, val_dataloader) in enumerate(cv):
+        for epoch in tqdm(range(epochs)):
+            train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
+            score = validate_after_epoch(model, val_dataloader)
+            if score > min_val_score:
+                make_test_predictions(
+                    model,
+                    test_dataloader,
+                    path="predictions",
+                    suffix=f"cfg={cfg_name}__fold_idx={fold_idx}__epoch={epoch}__score={score:.5f}",
+                )
 
 
 if __name__ == "__main__":

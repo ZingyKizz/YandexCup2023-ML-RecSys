@@ -2,7 +2,7 @@ name: "2"
 
 seed: 11
 data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
-val_size: 0.02
+n_splits: 4
 
 batch_size: 64
 max_len: 512
