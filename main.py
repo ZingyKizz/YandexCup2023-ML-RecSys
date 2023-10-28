@@ -43,8 +43,8 @@ def main(config_path):
         collator_testing=True,
     )
     min_val_score = cfg["best_score"]
-    has_predict = False
     for fold_idx, (train_dataloader, val_dataloader) in enumerate(cv):
+        has_predict = False
         for epoch in tqdm(range(epochs)):
             train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
             score = validate_after_epoch(model, val_dataloader)
