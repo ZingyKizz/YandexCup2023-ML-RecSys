@@ -54,7 +54,7 @@ def make_dataloader(df, track_idx2embeds, cfg, testing=False):
     dataloader = DataLoader(
         dataset,
         batch_size=cfg["batch_size"],
-        shuffle=False if testing else True,
+        shuffle=not testing,
         collate_fn=Collator(max_len=cfg["max_len"], testing=testing),
         drop_last=False,
     )
@@ -69,5 +69,5 @@ def cross_val_split(df, track_idx2embeds, cfg):
         val_df = df.iloc[val_indices]
         yield (
             make_dataloader(train_df, track_idx2embeds, cfg),
-            make_dataloader(val_df, track_idx2embeds, cfg),
+            make_dataloader(val_df, track_idx2embeds, cfg, testing=True),
         )

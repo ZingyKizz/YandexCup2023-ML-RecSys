@@ -47,6 +47,6 @@ scheduler_params: {
 }
 
 
-n_epochs: 15
+n_epochs: 20
 
 best_score: 0.28
