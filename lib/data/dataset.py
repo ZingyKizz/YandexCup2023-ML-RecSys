@@ -18,8 +18,9 @@ class TaggingDataset(Dataset):
         row = self.df.iloc[idx]
         track_idx = row.track
         embeds = self.track_idx2embeds[track_idx]
+        target = -1
         if self.testing:
-            return track_idx, embeds
+            return track_idx, embeds, target
         tags = [int(x) for x in row.tags.split(",")]
         target = np.zeros(NUM_TAGS)
         target[tags] = 1
@@ -27,8 +28,7 @@ class TaggingDataset(Dataset):
 
 
 class Collator:
-    def __init__(self, max_len=None, testing=False):
-        self.testing = testing
+    def __init__(self, max_len=None):
         self.max_len = max_len
 
     def __call__(self, b):
@@ -36,8 +36,6 @@ class Collator:
         embeds = [torch.from_numpy(x[1][: self.max_len]) for x in b]
         attention_mask = self._create_attention_mask(embeds)
         embeds = torch.nn.utils.rnn.pad_sequence(embeds, batch_first=True)
-        if self.testing:
-            return track_idxs, (embeds, attention_mask)
         targets = np.vstack([x[2] for x in b])
         targets = torch.from_numpy(targets)
         return track_idxs, (embeds, attention_mask), targets
@@ -50,14 +48,14 @@ class Collator:
 
 
 def make_dataloader(
-    df, track_idx2embeds, cfg, dataset_testing=False, collator_testing=False
+    df, track_idx2embeds, cfg, testing=False
 ):
-    dataset = TaggingDataset(df, track_idx2embeds, testing=dataset_testing)
+    dataset = TaggingDataset(df, track_idx2embeds, testing=testing)
     dataloader = DataLoader(
         dataset,
         batch_size=cfg["batch_size"],
-        shuffle=not dataset_testing,
-        collate_fn=Collator(max_len=cfg["max_len"], testing=collator_testing),
+        shuffle=not testing,
+        collate_fn=Collator(max_len=cfg["max_len"]),
         drop_last=False,
     )
     return dataloader
@@ -74,14 +72,12 @@ def cross_val_split(df, track_idx2embeds, cfg):
                 train_df,
                 track_idx2embeds,
                 cfg,
-                dataset_testing=False,
-                collator_testing=False,
+                testing=False,
             ),
             make_dataloader(
                 val_df,
                 track_idx2embeds,
                 cfg,
-                dataset_testing=False,
-                collator_testing=True,
+                testing=False,
             ),
         )

@@ -12,26 +12,6 @@ def main(config_path):
     cfg_name = cfg["name"]
 
     seed_everything(cfg["seed"])
-
-    model = make_instance(cfg["model"], **cfg["model_params"])
-    criterion = make_instance(cfg["criterion"])
-
-    epochs = cfg["n_epochs"]
-    model = model.to(DEVICE)
-    criterion = criterion.to(DEVICE)
-    optimizer = make_instance(
-        cfg["optimizer"],
-        get_grouped_parameters(model, cfg["lr"], cfg["lr_alpha"]),
-        **cfg["optimizer_params"],
-    )
-
-    if "scheduler" in cfg:
-        scheduler = make_instance(
-            cfg["scheduler"], optimizer, **cfg["scheduler_params"]
-        )
-    else:
-        scheduler = None
-
     tag_data, track_idx2embeds = load_data(cfg)
 
     cv = cross_val_split(tag_data["train"], track_idx2embeds, cfg)
@@ -39,11 +19,29 @@ def main(config_path):
         tag_data["test"],
         track_idx2embeds,
         cfg,
-        dataset_testing=True,
-        collator_testing=True,
+        testing=True,
     )
     min_val_score = cfg["best_score"]
+    epochs = cfg["n_epochs"]
     for fold_idx, (train_dataloader, val_dataloader) in enumerate(cv):
+        model = make_instance(cfg["model"], **cfg["model_params"])
+        criterion = make_instance(cfg["criterion"])
+
+        model = model.to(DEVICE)
+        criterion = criterion.to(DEVICE)
+        optimizer = make_instance(
+            cfg["optimizer"],
+            get_grouped_parameters(model, cfg["lr"], cfg["lr_alpha"]),
+            **cfg["optimizer_params"],
+        )
+
+        if "scheduler" in cfg:
+            scheduler = make_instance(
+                cfg["scheduler"], optimizer, **cfg["scheduler_params"]
+            )
+        else:
+            scheduler = None
+
         has_predict = False
         for epoch in tqdm(range(epochs)):
             train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
@@ -52,7 +50,13 @@ def main(config_path):
                 make_test_predictions(
                     model,
                     test_dataloader,
-                    path="predictions",
+                    path="predictions_test",
+                    suffix=f"cfg={cfg_name}__fold_idx={fold_idx}__epoch={epoch}__score={score:.5f}",
+                )
+                make_test_predictions(
+                    model,
+                    val_dataloader,
+                    path="predictions_val",
                     suffix=f"cfg={cfg_name}__fold_idx={fold_idx}__epoch={epoch}__score={score:.5f}",
                 )
                 has_predict = True
@@ -60,7 +64,13 @@ def main(config_path):
             make_test_predictions(
                 model,
                 test_dataloader,
-                path="predictions",
+                path="predictions_test",
+                suffix=f"cfg={cfg_name}__fold_idx={fold_idx}__epoch={epoch}__score={score:.5f}",
+            )
+            make_test_predictions(
+                model,
+                val_dataloader,
+                path="predictions_val",
                 suffix=f"cfg={cfg_name}__fold_idx={fold_idx}__epoch={epoch}__score={score:.5f}",
             )
 

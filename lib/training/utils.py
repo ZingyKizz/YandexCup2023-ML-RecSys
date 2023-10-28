@@ -49,7 +49,7 @@ def predict(model, loader):
     track_idxs = []
     predictions = []
     for data in loader:
-        track_idx, (embeds, attention_mask) = data
+        track_idx, (embeds, attention_mask), _ = data
         embeds = batch_to_device(embeds)
         attention_mask = batch_to_device(attention_mask)
         pred_logits = model(embeds, attention_mask=attention_mask)
@@ -82,7 +82,7 @@ def make_test_predictions(model, test_dataloader, path=None, suffix=None):
         ]
     )
     if suffix is not None:
-        name = f"prediction_{suffix}.csv"
+        name = f"prediction__{suffix}.csv"
     else:
         name = "prediction.csv"
     if path is not None:
