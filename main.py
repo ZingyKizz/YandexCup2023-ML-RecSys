@@ -37,6 +37,7 @@ def main(config_path):
     cv = cross_val_split(tag_data["train"], track_idx2embeds, cfg)
     test_dataloader = make_dataloader(tag_data["test"], track_idx2embeds, cfg, testing=True)
     min_val_score = cfg["best_score"]
+    has_predict = False
     for fold_idx, (train_dataloader, val_dataloader) in enumerate(cv):
         for epoch in tqdm(range(epochs)):
             train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
@@ -48,6 +49,14 @@ def main(config_path):
                     path="predictions",
                     suffix=f"cfg={cfg_name}__fold_idx={fold_idx}__epoch={epoch}__score={score:.5f}",
                 )
+                has_predict = True
+    if not has_predict:
+        make_test_predictions(
+            model,
+            test_dataloader,
+            path="predictions",
+            suffix=f"cfg={cfg_name}__fold_idx={fold_idx}__epoch={epoch}__score={score:.5f}",
+    )
 
 
 if __name__ == "__main__":
