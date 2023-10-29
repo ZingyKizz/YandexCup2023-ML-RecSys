@@ -1,18 +1,20 @@
 from torch.nn import BCEWithLogitsLoss
 from torch import nn
 import torch
+from lib.const import NUM_TAGS
 
 
 class FocalLoss(nn.Module):
-    def __init__(self, gamma=2, alpha=0.25):
+    def __init__(self, gamma=2):
         super().__init__()
-        self.bce_loss = nn.BCEWithLogitsLoss()
-        self.focus_param = gamma
-        self.balance_param = alpha
+        self.gamma = gamma
 
     def forward(self, input, target):
-        bce_loss = self.bce_loss(input, target)
-        logpt = -bce_loss
-        pt = torch.exp(logpt)
-        focal_loss = -((1 - pt) ** self.focus_param) * logpt * self.balance_param
-        return focal_loss
+        logits = input.reshape(-1)
+        targets = target.reshape(-1)
+        p = torch.sigmoid(logits)
+        p = torch.where(targets >= 0.5, p, 1 - p)
+        logp = -torch.log(torch.clamp(p, 1e-4, 1 - 1e-4))
+        loss = logp * ((1 - p) ** self.gamma)
+        loss = NUM_TAGS * loss.mean()
+        return loss
