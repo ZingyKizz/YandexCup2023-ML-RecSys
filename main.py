@@ -47,7 +47,13 @@ def main(config_path):
                     has_predict = True
             if not has_predict:
                 make_val_test_predictions(
-                    model, val_dataloader, test_dataloader, cfg_name, fold_idx, epoch, score
+                    model,
+                    val_dataloader,
+                    test_dataloader,
+                    cfg_name,
+                    fold_idx,
+                    epoch,
+                    score,
                 )
     if cfg.get("use_solo", True):
         train_dataloader = make_dataloader(
