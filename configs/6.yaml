@@ -1,4 +1,4 @@
-name: "5"
+name: "6"
 
 seed: 11
 data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
@@ -53,3 +53,5 @@ scheduler_params: {
 n_epochs: 20
 
 best_score: 0.23
+
+use_cv: true
