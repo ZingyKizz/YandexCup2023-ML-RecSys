@@ -26,15 +26,15 @@ def main(config_path):
     )
     if cfg.get("use_cv", True):
         cv = cross_val_split(tag_data["train"], track_idx2embeds, cfg)
-        min_val_score = cfg["best_score"]
-        epochs = cfg["n_epochs"]
+        cv_min_score_to_save_predictions = cfg["cv_min_score_to_save_predictions"]
+        epochs = cfg.get("cv_n_epochs", 15)
         for fold_idx, (train_dataloader, val_dataloader) in enumerate(cv):
             model, criterion, optimizer, scheduler = init_nn_stuff(cfg)
             has_predict = False
             for epoch in tqdm(range(epochs)):
                 train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
                 score = validate_after_epoch(model, val_dataloader)
-                if score > min_val_score:
+                if score > cv_min_score_to_save_predictions:
                     make_val_test_predictions(
                         model,
                         val_dataloader,
@@ -49,23 +49,24 @@ def main(config_path):
                 make_val_test_predictions(
                     model, val_dataloader, test_dataloader, cfg_name, fold_idx, epoch, score
                 )
-
-    train_dataloader = make_dataloader(
-        tag_data["train"],
-        track_idx2embeds,
-        cfg,
-        testing=False,
-    )
-    model, criterion, optimizer, scheduler = init_nn_stuff(cfg)
-    for epoch in tqdm(range(17)):
-        train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
-        if epoch >= 13:
-            make_test_predictions(
-                model,
-                test_dataloader,
-                path="predictions_test",
-                suffix=f"cfg={cfg_name}__fold_idx=-1__epoch={epoch}__score=-1",
-            )
+    if cfg.get("use_solo", True):
+        train_dataloader = make_dataloader(
+            tag_data["train"],
+            track_idx2embeds,
+            cfg,
+            testing=False,
+        )
+        model, criterion, optimizer, scheduler = init_nn_stuff(cfg)
+        epochs = cfg.get("solo_n_epochs", 15)
+        for epoch in tqdm(epochs):
+            train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
+            if epochs - epoch <= cfg.get("solo_save_last_n_epochs", 1):
+                make_test_predictions(
+                    model,
+                    test_dataloader,
+                    path="predictions_test",
+                    suffix=f"cfg={cfg_name}__fold_idx=-1__epoch={epoch}__score=-1",
+                )
 
 
 if __name__ == "__main__":
