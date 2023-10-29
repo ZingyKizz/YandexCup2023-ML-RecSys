@@ -112,17 +112,17 @@ def make_val_test_predictions(
 
 def init_nn_stuff(cfg):
     model = make_instance(cfg["model"], **cfg["model_params"])
-    criterion = make_instance(cfg["criterion"])
+    criterion = make_instance(cfg["criterion"], **cfg.get("criterion_params", {}))
     model = model.to(DEVICE)
     criterion = criterion.to(DEVICE)
     optimizer = make_instance(
         cfg["optimizer"],
         get_grouped_parameters(model, cfg["lr"], cfg["lr_alpha"]),
-        **cfg["optimizer_params"],
+        **cfg.get("optimizer_params", {}),
     )
     if "scheduler" in cfg:
         scheduler = make_instance(
-            cfg["scheduler"], optimizer, **cfg["scheduler_params"]
+            cfg["scheduler"], optimizer, **cfg.get("scheduler_params", {})
         )
     else:
         scheduler = None
