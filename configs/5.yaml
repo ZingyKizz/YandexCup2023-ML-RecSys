@@ -33,9 +33,9 @@ model_params: {
 }
 
 
-criterion: training.criterion.FocalLoss
+criterion: training.criterion.BCEWithLogitsLoss
 
-optimizer: training.optimizer.AdamW
+optimizer: training.optimizer.Adam
 lr: 0.00001
 lr_alpha: 30
 optimizer_params: {}
@@ -47,6 +47,6 @@ scheduler_params: {
 }
 
 
-n_epochs: 20
+n_epochs: 25
 
-best_score: 0.235
+best_score: 0.238
