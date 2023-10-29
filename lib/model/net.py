@@ -189,6 +189,7 @@ class TransNetwork4(nn.Module):
         x = self.encoder(
             inputs_embeds=embeds, attention_mask=attention_mask
         ).last_hidden_state
+        x = self.mp(x, attention_mask=attention_mask)
         x = self.lin(x)
         outs = self.fc(x)
         return outs
