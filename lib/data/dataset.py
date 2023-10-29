@@ -47,9 +47,7 @@ class Collator:
         return attention_mask
 
 
-def make_dataloader(
-    df, track_idx2embeds, cfg, testing=False
-):
+def make_dataloader(df, track_idx2embeds, cfg, testing=False):
     dataset = TaggingDataset(df, track_idx2embeds, testing=testing)
     dataloader = DataLoader(
         dataset,

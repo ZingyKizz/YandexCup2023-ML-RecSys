@@ -169,3 +169,26 @@ class TransNetwork3(nn.Module):
         x = self.lin(x)
         outs = self.fc(x)
         return outs
+
+
+class TransNetwork4(nn.Module):
+    def __init__(
+        self, num_classes=NUM_TAGS, input_dim=768, hidden_dim=512, encoder_cfg=None
+    ):
+        super().__init__()
+        self.num_classes = num_classes
+        self.bn = nn.LayerNorm(input_dim)
+        self.mp = MeanPooling()
+        self.encoder = DebertaV2Model(DebertaV2Config(**encoder_cfg))
+        self.lin = ProjectionHead(
+            input_dim, hidden_dim, dropout=0.3, residual_connection=True
+        )
+        self.fc = nn.Linear(hidden_dim, num_classes)
+
+    def forward(self, embeds, attention_mask=None):
+        x = self.encoder(
+            inputs_embeds=embeds, attention_mask=attention_mask
+        ).last_hidden_state
+        x = self.lin(x)
+        outs = self.fc(x)
+        return outs
