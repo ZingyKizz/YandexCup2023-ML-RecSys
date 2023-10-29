@@ -4,11 +4,11 @@ import torch
 
 
 class FocalLoss(nn.Module):
-    def __init__(self, focus_param=2, balance_param=0.25):
+    def __init__(self, gamma=2, alpha=0.25):
         super().__init__()
         self.bce_loss = nn.BCEWithLogitsLoss()
-        self.focus_param = focus_param
-        self.balance_param = balance_param
+        self.focus_param = gamma
+        self.balance_param = alpha
 
     def forward(self, input, target):
         bce_loss = self.bce_loss(input, target)

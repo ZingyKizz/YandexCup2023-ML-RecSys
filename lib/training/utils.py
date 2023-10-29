@@ -6,6 +6,8 @@ import pandas as pd
 import os
 
 from lib.const import DEVICE
+from lib.utils import make_instance
+from lib.training.optimizer import get_grouped_parameters
 
 
 def batch_to_device(embeds):
@@ -89,3 +91,39 @@ def make_test_predictions(model, test_dataloader, path=None, suffix=None):
         os.makedirs(path, exist_ok=True)
         name = os.path.join(path, name)
     predictions_df.to_csv(name, index=False)
+
+
+def make_val_test_predictions(
+    model, val_dataloader, test_dataloader, cfg_name, fold_idx, epoch, score
+):
+    make_test_predictions(
+        model,
+        val_dataloader,
+        path="predictions_val",
+        suffix=f"cfg={cfg_name}__fold_idx={fold_idx}__epoch={epoch}__score={score:.5f}",
+    )
+    make_test_predictions(
+        model,
+        test_dataloader,
+        path="predictions_test",
+        suffix=f"cfg={cfg_name}__fold_idx={fold_idx}__epoch={epoch}__score={score:.5f}",
+    )
+
+
+def init_nn_stuff(cfg):
+    model = make_instance(cfg["model"], **cfg["model_params"])
+    criterion = make_instance(cfg["criterion"])
+    model = model.to(DEVICE)
+    criterion = criterion.to(DEVICE)
+    optimizer = make_instance(
+        cfg["optimizer"],
+        get_grouped_parameters(model, cfg["lr"], cfg["lr_alpha"]),
+        **cfg["optimizer_params"],
+    )
+    if "scheduler" in cfg:
+        scheduler = make_instance(
+            cfg["scheduler"], optimizer, **cfg["scheduler_params"]
+        )
+    else:
+        scheduler = None
+    return model, criterion, optimizer, scheduler
