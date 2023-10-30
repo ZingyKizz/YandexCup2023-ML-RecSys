@@ -64,7 +64,7 @@ def main(config_path):
         )
         model, criterion, optimizer, scheduler = init_nn_stuff(cfg)
         epochs = cfg.get("solo_n_epochs", 15)
-        for epoch in tqdm(epochs):
+        for epoch in tqdm(range(epochs)):
             train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
             if epochs - epoch <= cfg.get("solo_save_last_n_epochs", 1):
                 make_test_predictions(
