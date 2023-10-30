@@ -10,13 +10,14 @@ class FocalLoss(nn.Module):
         self.gamma = gamma
 
     def forward(self, input, target):
+        num_labels = input.size(1)
         p = torch.sigmoid(input)
         p = torch.where(target >= 0.5, p, 1 - p)
         logp = -torch.log(torch.clamp(p, 1e-4, 1 - 1e-4))
         loss = logp * ((1 - p) ** self.gamma)
         if self.class_weights is not None:
             loss *= self.class_weights
-        loss = loss.size(1) * loss.mean()
+        loss = num_labels * loss.mean()
         return loss
 
     @staticmethod
