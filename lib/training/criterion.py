@@ -1,7 +1,6 @@
 from torch.nn import BCEWithLogitsLoss
 from torch import nn
 import torch
-from lib.const import NUM_TAGS
 
 
 class FocalLoss(nn.Module):
@@ -17,7 +16,7 @@ class FocalLoss(nn.Module):
         loss = logp * ((1 - p) ** self.gamma)
         if self.class_weights is not None:
             loss *= self.class_weights
-        loss = NUM_TAGS * loss.mean()
+        loss = loss.size(1) * loss.mean()
         return loss
 
     @staticmethod
