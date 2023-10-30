@@ -1,7 +1,6 @@
 from torch.nn import BCEWithLogitsLoss
 from torch import nn
 import torch
-from lib.const import NUM_TAGS
 
 
 class FocalLoss(nn.Module):
@@ -26,6 +25,3 @@ class FocalLoss(nn.Module):
         w /= torch.sum(w)
         w *= w.size(0)
         return w
-
-
-

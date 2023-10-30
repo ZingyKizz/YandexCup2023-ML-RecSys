@@ -26,7 +26,9 @@ def main(config_path):
     )
     if cfg.get("use_cv", True):
         cv = cross_val_split(tag_data["train"], track_idx2embeds, cfg)
-        cv_min_score_to_save_predictions = cfg.get("cv_min_score_to_save_predictions", 0.0)
+        cv_min_score_to_save_predictions = cfg.get(
+            "cv_min_score_to_save_predictions", 0.0
+        )
         epochs = cfg.get("cv_n_epochs", 15)
         for fold_idx, (train_dataloader, val_dataloader) in enumerate(cv):
             model, criterion, optimizer, scheduler = init_nn_stuff(cfg)
