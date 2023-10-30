@@ -6,7 +6,7 @@ import torch
 class FocalLoss(nn.Module):
     def __init__(self, class_weights=None, gamma=2):
         super().__init__()
-        self.class_weights = self.class_weights(class_weights)
+        self.class_weights = self._class_weights(class_weights)
         self.gamma = gamma
 
     def forward(self, input, target):
@@ -21,7 +21,8 @@ class FocalLoss(nn.Module):
 
     @staticmethod
     def _class_weights(class_weights):
-        w = torch.as_tensor(class_weights, dtype=torch.float)
-        w /= torch.sum(w)
-        w *= w.size(0)
-        return w
+        if class_weights is not None:
+            w = torch.as_tensor(class_weights, dtype=torch.float)
+            w /= torch.sum(w)
+            w *= w.size(0)
+            return w
