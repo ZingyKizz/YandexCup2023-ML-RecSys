@@ -94,7 +94,5 @@ class CNN1DModel(nn.Module):
         x = self.pooling(x)
         x = self.conv_block5(x)
         x = self.pooling(x)
-        x = self.conv_block6(x)
-        x = self.pooling(x)
         x = torch.transpose(x, 1, 2)
         return x
