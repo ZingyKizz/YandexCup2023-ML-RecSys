@@ -16,7 +16,7 @@ class FocalLoss(nn.Module):
         logp = -torch.log(torch.clamp(p, 1e-4, 1 - 1e-4))
         loss = logp * ((1 - p) ** self.gamma)
         if self.class_weights is not None:
-            loss *= self.class_weights
+            loss = loss * self.class_weights
         loss = num_labels * loss.mean()
         return loss
 
@@ -24,6 +24,6 @@ class FocalLoss(nn.Module):
     def _class_weights(class_weights):
         if class_weights is not None:
             w = torch.as_tensor(class_weights, dtype=torch.float)
-            w /= torch.sum(w)
-            w *= w.size(0)
+            w = w / torch.sum(w)
+            w = w * w.size(0)
             return w
