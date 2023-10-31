@@ -3,7 +3,7 @@ import torch
 from transformers.models.bert import BertModel, BertConfig
 from transformers.models.deberta_v2 import DebertaV2Model, DebertaV2Config
 from lib.const import NUM_TAGS
-from lib.model.base import MeanPooling
+from lib.model.base import MeanPooling, ProjectionHead
 from lib.model.conv_1d import CNN1DModel
 
 
@@ -28,27 +28,6 @@ class Network(nn.Module):
         x = self.lin(x)
         outs = self.fc(x)
         return outs
-
-
-class ProjectionHead(nn.Module):
-    def __init__(self, input_dim, hidden_dim, dropout=0.3, residual_connection=True):
-        super().__init__()
-        self.projection = nn.Linear(input_dim, hidden_dim)
-        self.gelu = nn.GELU()
-        self.fc = nn.Linear(hidden_dim, hidden_dim)
-        self.dropout = nn.Dropout(dropout)
-        self.ln = nn.LayerNorm(hidden_dim)
-        self.residual_connection = residual_connection
-
-    def forward(self, x):
-        projected = self.projection(x)
-        x = self.gelu(projected)
-        x = self.fc(x)
-        x = self.dropout(x)
-        if self.residual_connection:
-            x = x + projected
-        x = self.ln(x)
-        return x
 
 
 class TransNetwork(nn.Module):
