@@ -25,7 +25,7 @@ class Conv1dBlock(nn.Module):
                 bias=True,
             ),
             nn.BatchNorm1d(out_channels),
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.Conv1d(
                 out_channels,
                 out_channels,
@@ -43,7 +43,7 @@ class Conv1dBlock(nn.Module):
             ),
             nn.BatchNorm1d(out_channels),
         )
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU()
 
     def forward(self, x):
         output = self.conv_block(x)
