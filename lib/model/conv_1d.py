@@ -140,6 +140,5 @@ class VeryLightCNN1DModel(nn.Module):
         x = self.pooling(x)
         x = self.conv_block2(x)
         x = self.pooling(x)
-        x = self.conv_block3(x)
         x = torch.transpose(x, 1, 2)
         return x
