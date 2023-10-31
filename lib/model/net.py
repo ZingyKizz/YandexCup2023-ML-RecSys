@@ -171,7 +171,6 @@ class TransNetwork4(nn.Module):
     ):
         super().__init__()
         self.num_classes = num_classes
-        self.bn = nn.LayerNorm(input_dim)
         self.mp = MeanPooling()
         self.encoder = DebertaV2Model(DebertaV2Config(**encoder_cfg))
         self.lin = ProjectionHead(
@@ -193,6 +192,7 @@ class TransNetwork5(nn.Module):
     def __init__(self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS):
         super().__init__()
         self.conv1d = CNN1DModel(input_dim)
+        self.mp = MeanPooling()
         self.lin = ProjectionHead(
             input_dim, hidden_dim, dropout=0.3, residual_connection=True
         )
@@ -213,6 +213,7 @@ class TransNetwork6(nn.Module):
         super().__init__()
         self.conv1d = CNN1DModel(input_dim)
         self.encoder = DebertaV2Model(DebertaV2Config(**encoder_cfg))
+        self.mp = MeanPooling()
         self.lin = ProjectionHead(
             input_dim, hidden_dim, dropout=0.3, residual_connection=True
         )
