@@ -90,5 +90,4 @@ class AsymmetricLoss(nn.Module):
         loss_neg = (1 - pt_neg) ** self.gamma_neg * ce_loss_neg
         loss_pos = (1 - pt) ** self.gamma_pos * ce_loss
         loss = targets * loss_pos + (1 - targets) * loss_neg
-
         return loss.mean()
