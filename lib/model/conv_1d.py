@@ -49,7 +49,7 @@ class Conv1dBlock(nn.Module):
         output = self.conv_block(x)
         if self.skip_connection:
             x = self.downsample(x)
-            output += x
+            output = output + x
         output = self.relu(output)
         return output
 

@@ -14,7 +14,7 @@ model_params: {
     encoder_cfg: {
       vocab_size: 1,
       hidden_size: 768,
-      num_hidden_layers: 12,
+      num_hidden_layers: 6,
       num_attention_heads: 12,
       intermediate_size: 3072,
       hidden_act: "gelu",
@@ -50,8 +50,8 @@ scheduler_params: {
 }
 
 use_cv: true
-cv_n_epochs: 18
-cv_min_score_to_save_predictions: 0.23
+cv_n_epochs: 25
+cv_min_score_to_save_predictions: 0.24
 
 use_solo: true
 solo_n_epochs: 13
