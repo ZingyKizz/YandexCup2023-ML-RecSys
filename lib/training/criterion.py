@@ -27,3 +27,10 @@ class FocalLoss(nn.Module):
             w = w / torch.sum(w)
             w = w * w.size(0)
             return w
+
+
+class ZLPRLoss(nn.Module):
+    def forward(self, s, y):
+        loss = torch.log(1 + torch.sum(torch.exp(-s) * y, dim=-1))
+        loss += torch.log(1 + torch.sum(torch.exp(s) * (1 - y), dim=-1))
+        return loss.mean()
