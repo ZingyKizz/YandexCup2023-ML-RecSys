@@ -3,6 +3,7 @@ from torch.utils.data import Dataset, DataLoader
 import numpy as np
 from sklearn.model_selection import KFold
 from lib.const import NUM_TAGS
+from lib.utils import make_instance
 
 
 class TaggingDataset(Dataset):
@@ -28,7 +29,7 @@ class TaggingDataset(Dataset):
 
 
 class Collator:
-    def __init__(self, max_len=None):
+    def __init__(self, max_len=None, **kwargs):
         self.max_len = max_len
 
     def __call__(self, b):
@@ -47,13 +48,41 @@ class Collator:
         return attention_mask
 
 
+class RandomMomentCollator:
+    def __init__(self, max_len=None, testing=False, **kwargs):
+        self.max_len = max_len
+        self.testing = testing
+
+    def __call__(self, b):
+        track_idxs = torch.from_numpy(np.vstack([x[0] for x in b]))
+        embeds = [self._choose_random_moment_embedding(x[1]) for x in b]
+        attention_mask = self._create_attention_mask(embeds)
+        embeds = torch.nn.utils.rnn.pad_sequence(embeds, batch_first=True)
+        targets = np.vstack([x[2] for x in b])
+        targets = torch.from_numpy(targets)
+        return track_idxs, (embeds, attention_mask), targets
+
+    @staticmethod
+    def _create_attention_mask(embeds):
+        lens = torch.tensor([len(e) for e in embeds])
+        attention_mask = (torch.arange(max(lens))[None, :] < lens[:, None]).float()
+        return attention_mask
+
+    def _choose_random_moment_embedding(self, embedding):
+        start = 0
+        if not self.testing:
+            start = np.random.randint(0, max(len(embedding) - self.max_len, 1))
+        res = embedding[start: start + self.max_len]
+        return torch.as_tensor(res)
+
+
 def make_dataloader(df, track_idx2embeds, cfg, testing=False):
-    dataset = TaggingDataset(df, track_idx2embeds, testing=testing)
+    dataset = make_instance(cfg["dataset"], df=df, track_idx2embeds=track_idx2embeds, testing=testing)
     dataloader = DataLoader(
         dataset,
         batch_size=cfg["batch_size"],
         shuffle=not testing,
-        collate_fn=Collator(max_len=cfg["max_len"]),
+        collate_fn=make_instance(cfg["collator"], max_len=cfg["max_len"], testing=testing),
         drop_last=False,
     )
     return dataloader

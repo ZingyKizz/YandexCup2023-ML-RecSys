@@ -50,3 +50,6 @@ scheduler_params: {
 n_epochs: 25
 
 best_score: 0.238
+
+dataset: data.dataset.TaggingDataset
+collator: data.dataset.Collator

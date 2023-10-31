@@ -37,3 +37,6 @@ cv_min_score_to_save_predictions: 0.23
 use_solo: true
 solo_n_epochs: 25
 solo_save_last_n_epochs: 3
+
+dataset: data.dataset.TaggingDataset
+collator: data.dataset.Collator
