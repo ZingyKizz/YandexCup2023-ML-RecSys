@@ -1,5 +1,6 @@
 from lib.data.s3 import load_data
 from tqdm import tqdm
+import torchinfo
 from lib.training.utils import (
     train_epoch,
     validate_after_epoch,
@@ -24,6 +25,7 @@ def main(config_path):
         cfg,
         testing=True,
     )
+    model_info_was_printed = False
     if cfg.get("use_cv", True):
         cv = cross_val_split(tag_data["train"], track_idx2embeds, cfg)
         cv_min_score_to_save_predictions = cfg.get(
@@ -32,6 +34,11 @@ def main(config_path):
         epochs = cfg.get("cv_n_epochs", 15)
         for fold_idx, (train_dataloader, val_dataloader) in enumerate(cv):
             model, criterion, optimizer, scheduler = init_nn_stuff(cfg)
+
+            if not model_info_was_printed:
+                torchinfo.summary(model)
+                model_info_was_printed = True
+
             has_predict = False
             for epoch in tqdm(range(epochs)):
                 train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
@@ -65,6 +72,8 @@ def main(config_path):
             testing=False,
         )
         model, criterion, optimizer, scheduler = init_nn_stuff(cfg)
+        if not model_info_was_printed:
+            torchinfo.summary(model)
         epochs = cfg.get("solo_n_epochs", 15)
         for epoch in tqdm(range(epochs)):
             train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
