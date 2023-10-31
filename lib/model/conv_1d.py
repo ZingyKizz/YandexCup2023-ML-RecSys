@@ -69,15 +69,10 @@ class CNN1DModel(nn.Module):
         )
         self.conv_block3 = Conv1dBlock(
             in_channels=4 * in_channels,
-            out_channels=4 * in_channels,
-            skip_connection=True,
-        )
-        self.conv_block4 = Conv1dBlock(
-            in_channels=4 * in_channels,
             out_channels=2 * in_channels,
             skip_connection=True,
         )
-        self.conv_block5 = Conv1dBlock(
+        self.conv_block4 = Conv1dBlock(
             in_channels=2 * in_channels, out_channels=in_channels, skip_connection=True
         )
         self.pooling = nn.AvgPool1d(kernel_size=(3,), stride=(1,), padding=(1,))
@@ -91,8 +86,6 @@ class CNN1DModel(nn.Module):
         x = self.conv_block3(x)
         x = self.pooling(x)
         x = self.conv_block4(x)
-        x = self.pooling(x)
-        x = self.conv_block5(x)
         x = self.pooling(x)
         x = torch.transpose(x, 1, 2)
         return x
