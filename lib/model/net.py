@@ -3,7 +3,7 @@ import torch
 from transformers.models.bert import BertModel, BertConfig
 from transformers.models.deberta_v2 import DebertaV2Model, DebertaV2Config
 from lib.const import NUM_TAGS
-from lib.model.base import MeanPooling, ProjectionHead
+from lib.model.base import MeanPooling, ProjectionHead, smart_init_weights
 from lib.model.conv_1d import CNN1DModel, LightCNN1DModel
 
 
@@ -185,30 +185,6 @@ class TransNetwork5(nn.Module):
         return outs
 
 
-class TransNetwork6(nn.Module):
-    def __init__(
-        self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS, encoder_cfg=None
-    ):
-        super().__init__()
-        self.conv1d = LightCNN1DModel(input_dim)
-        self.encoder = DebertaV2Model(DebertaV2Config(**encoder_cfg))
-        self.mp = MeanPooling()
-        self.lin = ProjectionHead(
-            input_dim, hidden_dim, dropout=0.3, residual_connection=True
-        )
-        self.fc = nn.Linear(hidden_dim, num_classes)
-
-    def forward(self, x, attention_mask):
-        x = self.conv1d(x)
-        x = self.encoder(
-            inputs_embeds=x, attention_mask=attention_mask
-        ).last_hidden_state
-        x = self.mp(x, attention_mask=attention_mask)
-        x = self.lin(x)
-        outs = self.fc(x)
-        return outs
-
-
 class TransNetwork7(nn.Module):
     def __init__(self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS):
         super().__init__()
@@ -221,6 +197,30 @@ class TransNetwork7(nn.Module):
 
     def forward(self, x, attention_mask):
         x = self.conv1d(x)
+        x = self.mp(x, attention_mask=attention_mask)
+        x = self.lin(x)
+        outs = self.fc(x)
+        return outs
+
+
+class TransNetwork8(nn.Module):
+    def __init__(
+        self, num_classes=NUM_TAGS, input_dim=768, hidden_dim=512, encoder_cfg=None
+    ):
+        super().__init__()
+        self.num_classes = num_classes
+        self.mp = MeanPooling()
+        self.encoder = DebertaV2Model(DebertaV2Config(**encoder_cfg))
+        self.lin = ProjectionHead(
+            input_dim, hidden_dim, dropout=0.3, residual_connection=True
+        )
+        self.fc = nn.Linear(hidden_dim, num_classes)
+        self.apply(smart_init_weights)
+
+    def forward(self, embeds, attention_mask=None):
+        x = self.encoder(
+            inputs_embeds=embeds, attention_mask=attention_mask
+        ).last_hidden_state
         x = self.mp(x, attention_mask=attention_mask)
         x = self.lin(x)
         outs = self.fc(x)
