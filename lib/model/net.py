@@ -244,31 +244,3 @@ class TransNetwork9(nn.Module):
         x = self.lin(x)
         outs = self.fc(x)
         return outs
-
-
-class TransNetwork10(nn.Module):
-    def __init__(self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS, encoder_cfg=None):
-        super().__init__()
-        self.conv1d = VeryLightCNN1DModel(input_dim)
-        self.ln = nn.LayerNorm(input_dim)
-        self.mp = MeanPooling()
-        self.encoder = DebertaV2Model(DebertaV2Config(**encoder_cfg))
-        self.lin = ProjectionHead(
-            2 * input_dim, hidden_dim, dropout=0.5, residual_connection=False
-        )
-        self.lin.apply(smart_init_weights)
-        self.fc = nn.Linear(hidden_dim, num_classes)
-        self.fc.apply(smart_init_weights)
-
-    def forward(self, embeds, attention_mask):
-        x = self.conv1d(embeds)
-        x, _ = torch.max(x, dim=1)
-        x = self.ln(x)
-        y = self.encoder(
-            inputs_embeds=embeds, attention_mask=attention_mask
-        ).last_hidden_state
-        y = self.mp(y, attention_mask=attention_mask)
-        z = torch.cat([x, y], dim=1)
-        z = self.lin(z)
-        outs = self.fc(z)
-        return outs
