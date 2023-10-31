@@ -254,8 +254,9 @@ class TransNetwork10(nn.Module):
         self.mp = MeanPooling()
         self.encoder = DebertaV2Model(DebertaV2Config(**encoder_cfg))
         self.lin = ProjectionHead(
-            2 * input_dim, hidden_dim, dropout=0.3, residual_connection=True
+            2 * input_dim, hidden_dim, dropout=0.5, residual_connection=False
         )
+        self.lin.apply(smart_init_weights)
         self.fc = nn.Linear(hidden_dim, num_classes)
         self.fc.apply(smart_init_weights)
 
