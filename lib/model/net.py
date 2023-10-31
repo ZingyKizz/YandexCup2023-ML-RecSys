@@ -266,7 +266,7 @@ class TransNetwork10(nn.Module):
         x = self.ln(x)
         y = self.encoder(
             inputs_embeds=embeds, attention_mask=attention_mask
-        )
+        ).last_hidden_state
         y = self.mp(y, attention_mask=attention_mask)
         z = torch.cat([x, y], dim=1)
         z = self.lin(z)
