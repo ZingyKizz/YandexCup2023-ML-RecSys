@@ -36,7 +36,7 @@ def main(config_path):
             model, criterion, optimizer, scheduler = init_nn_stuff(cfg)
 
             if not model_info_was_printed:
-                torchinfo.summary(model)
+                print(torchinfo.summary(model))
                 model_info_was_printed = True
 
             has_predict = False
@@ -73,7 +73,7 @@ def main(config_path):
         )
         model, criterion, optimizer, scheduler = init_nn_stuff(cfg)
         if not model_info_was_printed:
-            torchinfo.summary(model)
+            print(torchinfo.summary(model))
         epochs = cfg.get("solo_n_epochs", 15)
         for epoch in tqdm(range(epochs)):
             train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
