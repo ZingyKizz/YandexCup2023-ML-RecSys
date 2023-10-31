@@ -1,8 +1,6 @@
 import torch
 from torch import nn
 
-from lib.model.base import MeanPooling
-
 
 class Conv1dBlock(nn.Module):
     def __init__(
