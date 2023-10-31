@@ -72,17 +72,21 @@ class RandomMomentCollator:
         start = 0
         if not self.testing:
             start = np.random.randint(0, max(len(embedding) - self.max_len, 1))
-        res = embedding[start: start + self.max_len]
+        res = embedding[start : start + self.max_len]
         return torch.as_tensor(res)
 
 
 def make_dataloader(df, track_idx2embeds, cfg, testing=False):
-    dataset = make_instance(cfg["dataset"], df=df, track_idx2embeds=track_idx2embeds, testing=testing)
+    dataset = make_instance(
+        cfg["dataset"], df=df, track_idx2embeds=track_idx2embeds, testing=testing
+    )
     dataloader = DataLoader(
         dataset,
         batch_size=cfg["batch_size"],
         shuffle=not testing,
-        collate_fn=make_instance(cfg["collator"], max_len=cfg["max_len"], testing=testing),
+        collate_fn=make_instance(
+            cfg["collator"], max_len=cfg["max_len"], testing=testing
+        ),
         drop_last=False,
     )
     return dataloader
