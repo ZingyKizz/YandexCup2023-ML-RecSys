@@ -1,4 +1,4 @@
-name: "16"
+name: "17"
 
 seed: 11
 data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
@@ -11,7 +11,6 @@ model: model.net.TransNetwork7
 model_params: {
     input_dim: 768,
     hidden_dim: 512,
-    cnn_activation: "leaky_relu"
 }
 
 
@@ -40,4 +39,4 @@ solo_n_epochs: 20
 solo_save_last_n_epochs: 3
 
 dataset: data.dataset.TaggingDataset
-collator: data.dataset.Collator
+collator: data.dataset.RandomMomentCollator

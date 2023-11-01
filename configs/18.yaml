@@ -1,4 +1,4 @@
-name: "16"
+name: "18"
 
 seed: 11
 data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
@@ -7,11 +7,10 @@ n_splits: 3
 batch_size: 70
 max_len: 128
 
-model: model.net.TransNetwork7
+model: model.net.TransNetwork11
 model_params: {
     input_dim: 768,
     hidden_dim: 512,
-    cnn_activation: "leaky_relu"
 }
 
 
