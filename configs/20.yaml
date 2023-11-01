@@ -43,14 +43,14 @@ dataset: data.dataset.TaggingDataset
 collator: data.dataset.CollatorWithAug
 augmentations: {
   AddInversions: {
-    proba: 0.03,
-    p: 0.03,
+    proba: 0.05,
+    p: 0.1,
   },
   AddNoise: {
-    proba: 0.01,
-    noise: 0.01
+    proba: 0.03,
+    noise: 0.02
   },
   MixUp: {
-    proba: 0.02
+    proba: 0.03
   }
 }
