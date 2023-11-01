@@ -27,7 +27,9 @@ class AddNoise(Augmentation):
             p = self.params.get("p", 0.03)
             indices = np.where(np.random.random(size=len(embeds)) < p)
             embeds[indices] += np.random.normal(
-                loc=0, scale=self.params.get("noise", 0.01), size=(len(indices), embeds.shape[-1])
+                loc=0,
+                scale=self.params.get("noise", 0.01),
+                size=(len(indices), embeds.shape[-1]),
             )
         return embeds
 
