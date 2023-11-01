@@ -168,7 +168,9 @@ class TransNetwork4(nn.Module):
 
 
 class TransNetwork5(nn.Module):
-    def __init__(self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS, cnn_activation="relu"):
+    def __init__(
+        self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS, cnn_activation="relu"
+    ):
         super().__init__()
         self.conv1d = CNN1DModel(input_dim, activation=cnn_activation)
         self.mp = MeanPooling()
