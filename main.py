@@ -28,7 +28,7 @@ def main(config_path):
     model_info_was_printed = False
     if cfg.get("use_cv", True):
         cv = cross_val_split(tag_data["train"], track_idx2embeds, cfg)
-        cv_min_score_to_save_predictions = cfg.get(
+        best_score = cv_min_score_to_save_predictions = cfg.get(
             "cv_min_score_to_save_predictions", 0.0
         )
         epochs = cfg.get("cv_n_epochs", 15)
@@ -43,7 +43,7 @@ def main(config_path):
             for epoch in tqdm(range(epochs)):
                 train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
                 score = validate_after_epoch(model, val_dataloader)
-                if score > cv_min_score_to_save_predictions:
+                if score > best_score:
                     make_val_test_predictions(
                         model,
                         val_dataloader,
@@ -53,6 +53,7 @@ def main(config_path):
                         epoch,
                         score,
                     )
+                    best_score = score
                     has_predict = True
             if not has_predict:
                 make_val_test_predictions(

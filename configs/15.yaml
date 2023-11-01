@@ -31,7 +31,7 @@ scheduler_params: {
 }
 
 use_cv: true
-cv_n_epochs: 25
+cv_n_epochs: 40
 cv_min_score_to_save_predictions: 0.247
 
 use_solo: true
