@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.model_selection import KFold
 from lib.const import NUM_TAGS
 from lib.utils import make_instance
+from lib.data.augmentations import AugmentationList
 
 
 class TaggingDataset(Dataset):
@@ -76,16 +77,24 @@ class RandomMomentCollator:
         return torch.as_tensor(res)
 
 
-def make_dataloader(df, track_idx2embeds, cfg, testing=False):
+def make_dataloader(
+    df, track_idx2embeds, cfg, testing_dataset=False, testing_collator=False
+):
     dataset = make_instance(
-        cfg["dataset"], df=df, track_idx2embeds=track_idx2embeds, testing=testing
+        cfg["dataset"],
+        df=df,
+        track_idx2embeds=track_idx2embeds,
+        testing=testing_dataset,
     )
     dataloader = DataLoader(
         dataset,
         batch_size=cfg["batch_size"],
-        shuffle=not testing,
+        shuffle=not testing_dataset,
         collate_fn=make_instance(
-            cfg["collator"], max_len=cfg["max_len"], testing=testing
+            cfg["collator"],
+            max_len=cfg["max_len"],
+            testing=testing_collator,
+            augmentations=cfg.get("augmentations", {}),
         ),
         drop_last=False,
     )
@@ -103,12 +112,39 @@ def cross_val_split(df, track_idx2embeds, cfg):
                 train_df,
                 track_idx2embeds,
                 cfg,
-                testing=False,
+                testing_dataset=False,
+                testing_collator=False,
             ),
             make_dataloader(
                 val_df,
                 track_idx2embeds,
                 cfg,
-                testing=False,
+                testing_dataset=False,
+                testing_collator=True,
             ),
         )
+
+
+class CollatorWithAug:
+    def __init__(self, max_len=None, augmentations=None, testing=False, **kwargs):
+        self.max_len = max_len
+        self.augmentations = AugmentationList(augmentations, max_len)
+        self.testing = testing
+
+    def __call__(self, b):
+        track_idxs = torch.from_numpy(np.vstack([x[0] for x in b]))
+        embeds = [x[1] for x in b]
+        if self.testing:
+            embeds = self.augmentations(embeds)
+        embeds = [torch.from_numpy(e) for e in embeds[:self.max_len]]
+        attention_mask = self._create_attention_mask(embeds)
+        embeds = torch.nn.utils.rnn.pad_sequence(embeds, batch_first=True)
+        targets = np.vstack([x[2] for x in b])
+        targets = torch.from_numpy(targets)
+        return track_idxs, (embeds, attention_mask), targets
+
+    @staticmethod
+    def _create_attention_mask(embeds):
+        lens = torch.tensor([len(e) for e in embeds])
+        attention_mask = (torch.arange(max(lens))[None, :] < lens[:, None]).float()
+        return attention_mask

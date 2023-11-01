@@ -62,6 +62,8 @@ class Conv1dBlock(nn.Module):
             return nn.LeakyReLU()
         elif activation == "gelu":
             return nn.GELU()
+        elif activation == "swish":
+            return nn.SiLU()
         else:
             raise ValueError
 
