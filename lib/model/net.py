@@ -244,3 +244,22 @@ class TransNetwork9(nn.Module):
         x = self.lin(x)
         outs = self.fc(x)
         return outs
+
+
+class TransNetwork10(nn.Module):
+    def __init__(self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS):
+        super().__init__()
+        self.conv1d = VeryLightCNN1DModel(input_dim)
+        self.mp = MeanPooling()
+        self.lin = ProjectionHead(
+            input_dim, hidden_dim, dropout=0.3, residual_connection=True
+        )
+        self.fc = nn.Linear(hidden_dim, num_classes)
+        self.fc.apply(smart_init_weights)
+
+    def forward(self, x, attention_mask):
+        x = self.conv1d(x)
+        x = self.mp(x, attention_mask=attention_mask)
+        x = self.lin(x)
+        outs = self.fc(x)
+        return outs

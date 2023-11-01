@@ -78,9 +78,7 @@ class AsymmetricLoss(nn.Module):
         pt = torch.exp(-ce_loss)  # probability at y_i=1
         return ce_loss, pt
 
-    def forward(
-        self, inputs: torch.FloatTensor, targets: torch.LongTensor
-    ) -> torch.FloatTensor:
+    def forward(self, inputs, targets):
         ce_loss, pt = self._get_binary_cross_entropy_loss_and_pt_with_logits(
             inputs, targets
         )
