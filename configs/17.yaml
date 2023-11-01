@@ -7,7 +7,7 @@ n_splits: 3
 batch_size: 70
 max_len: 128
 
-model: model.net.TransNetwork7
+model: model.net.TransNetwork12
 model_params: {
     input_dim: 768,
     hidden_dim: 512,
@@ -27,7 +27,7 @@ optimizer_params: {}
 scheduler: training.scheduler.Scheduler
 scheduler_params: {
   num_training_steps: 9000,
-  scheduler_name: "get_cosine_with_hard_restarts_schedule_with_warmup"
+  scheduler_name: "get_linear_schedule_with_warmup"
 }
 
 use_cv: true
@@ -39,4 +39,4 @@ solo_n_epochs: 20
 solo_save_last_n_epochs: 3
 
 dataset: data.dataset.TaggingDataset
-collator: data.dataset.RandomMomentCollator
+collator: data.dataset.Collator

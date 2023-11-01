@@ -293,3 +293,22 @@ class TransNetwork11(nn.Module):
         x = self.lin(x)
         outs = self.fc(x)
         return outs
+
+
+class TransNetwork12(nn.Module):
+    def __init__(
+        self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS, cnn_activation="relu"
+    ):
+        super().__init__()
+        self.ln = nn.LayerNorm(input_dim)
+        self.conv1d = LightCNN1DModel(input_dim, activation=cnn_activation)
+        self.mp = MeanPooling()
+        self.fc = nn.Linear(input_dim, num_classes)
+        self.fc.apply(smart_init_weights)
+
+    def forward(self, x, attention_mask):
+        x = self.ln(x)
+        x = self.conv1d(x)
+        x = self.mp(x, attention_mask=attention_mask)
+        outs = self.fc(x)
+        return outs
