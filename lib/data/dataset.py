@@ -128,15 +128,15 @@ def cross_val_split(df, track_idx2embeds, cfg):
 class CollatorWithAug:
     def __init__(self, max_len=None, augmentations=None, testing=False, **kwargs):
         self.max_len = max_len
-        self.augmentations = AugmentationList(augmentations, max_len)
+        self.augmentations = (
+            AugmentationList(augmentations, max_len) if not testing else lambda x: x
+        )
         self.testing = testing
 
     def __call__(self, b):
         track_idxs = torch.from_numpy(np.vstack([x[0] for x in b]))
-        embeds = [x[1] for x in b]
-        if self.testing:
-            embeds = self.augmentations(embeds)
-        embeds = [torch.from_numpy(e) for e in embeds[:self.max_len]]
+        embeds = [self.augmentations(x[1]) for x in b]
+        embeds = [torch.from_numpy(e[: self.max_len]) for e in embeds]
         attention_mask = self._create_attention_mask(embeds)
         embeds = torch.nn.utils.rnn.pad_sequence(embeds, batch_first=True)
         targets = np.vstack([x[2] for x in b])
