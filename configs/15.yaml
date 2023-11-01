@@ -19,8 +19,8 @@ criterion_params: {
     gamma_neg: 8.0
 }
 
-optimizer: training.optimizer.AdamW
-lr: 0.000001
+optimizer: training.optimizer.Adam
+lr: 0.0003
 lr_alpha: 1
 optimizer_params: {}
 
@@ -31,10 +31,10 @@ scheduler_params: {
 }
 
 use_cv: true
-cv_n_epochs: 40
+cv_n_epochs: 50
 cv_min_score_to_save_predictions: 0.247
 
-use_solo: true
+use_solo: false
 solo_n_epochs: 20
 solo_save_last_n_epochs: 3
 

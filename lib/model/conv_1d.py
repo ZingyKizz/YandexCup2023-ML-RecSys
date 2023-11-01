@@ -11,6 +11,7 @@ class Conv1dBlock(nn.Module):
         stride=(1,),
         padding=(2,),
         skip_connection=False,
+        activation="relu",
     ):
         super().__init__()
         self.skip_connection = skip_connection
@@ -43,40 +44,60 @@ class Conv1dBlock(nn.Module):
             ),
             nn.BatchNorm1d(out_channels),
         )
-        self.relu = nn.ReLU()
+        self.act = self._get_activation_module(activation)
 
     def forward(self, x):
         output = self.conv_block(x)
         if self.skip_connection:
             x = self.downsample(x)
             output = output + x
-        output = self.relu(output)
+        output = self.act(output)
         return output
+
+    @staticmethod
+    def _get_activation_module(activation):
+        if activation == "relu":
+            return nn.ReLU()
+        elif activation == "leaky_relu":
+            return nn.LeakyReLU()
+        elif activation == "gelu":
+            return nn.GELU()
+        else:
+            raise ValueError
 
 
 class CNN1DModel(nn.Module):
-    def __init__(self, in_channels):
+    def __init__(self, in_channels, activation="relu"):
         super().__init__()
         self.conv_block1 = Conv1dBlock(
-            in_channels=in_channels, out_channels=2 * in_channels, skip_connection=True
+            in_channels=in_channels,
+            out_channels=2 * in_channels,
+            skip_connection=True,
+            activation=activation,
         )
         self.conv_block2 = Conv1dBlock(
             in_channels=2 * in_channels,
             out_channels=4 * in_channels,
             skip_connection=True,
+            activation=activation,
         )
         self.conv_block3 = Conv1dBlock(
             in_channels=4 * in_channels,
             out_channels=4 * in_channels,
             skip_connection=True,
+            activation=activation,
         )
         self.conv_block4 = Conv1dBlock(
             in_channels=4 * in_channels,
             out_channels=2 * in_channels,
             skip_connection=True,
+            activation=activation,
         )
         self.conv_block5 = Conv1dBlock(
-            in_channels=2 * in_channels, out_channels=in_channels, skip_connection=True
+            in_channels=2 * in_channels,
+            out_channels=in_channels,
+            skip_connection=True,
+            activation=activation,
         )
         self.pooling = nn.AvgPool1d(kernel_size=(3,), stride=(1,), padding=(1,))
 
@@ -97,18 +118,25 @@ class CNN1DModel(nn.Module):
 
 
 class LightCNN1DModel(nn.Module):
-    def __init__(self, in_channels):
+    def __init__(self, in_channels, activation="relu"):
         super().__init__()
         self.conv_block1 = Conv1dBlock(
-            in_channels=in_channels, out_channels=2 * in_channels, skip_connection=True
+            in_channels=in_channels,
+            out_channels=2 * in_channels,
+            skip_connection=True,
+            activation=activation,
         )
         self.conv_block2 = Conv1dBlock(
             in_channels=2 * in_channels,
             out_channels=2 * in_channels,
             skip_connection=True,
+            activation=activation,
         )
         self.conv_block3 = Conv1dBlock(
-            in_channels=2 * in_channels, out_channels=in_channels, skip_connection=True
+            in_channels=2 * in_channels,
+            out_channels=in_channels,
+            skip_connection=True,
+            activation=activation,
         )
         self.pooling = nn.AvgPool1d(kernel_size=(3,), stride=(1,), padding=(1,))
 
@@ -124,13 +152,19 @@ class LightCNN1DModel(nn.Module):
 
 
 class VeryLightCNN1DModel(nn.Module):
-    def __init__(self, in_channels):
+    def __init__(self, in_channels, activation="relu"):
         super().__init__()
         self.conv_block1 = Conv1dBlock(
-            in_channels=in_channels, out_channels=in_channels, skip_connection=True
+            in_channels=in_channels,
+            out_channels=in_channels,
+            skip_connection=True,
+            activation=activation,
         )
         self.conv_block2 = Conv1dBlock(
-            in_channels=in_channels, out_channels=in_channels, skip_connection=True
+            in_channels=in_channels,
+            out_channels=in_channels,
+            skip_connection=True,
+            activation=activation,
         )
         self.pooling = nn.AvgPool1d(kernel_size=(3,), stride=(1,), padding=(1,))
 

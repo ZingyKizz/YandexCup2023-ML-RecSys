@@ -168,9 +168,9 @@ class TransNetwork4(nn.Module):
 
 
 class TransNetwork5(nn.Module):
-    def __init__(self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS):
+    def __init__(self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS, cnn_activation="relu"):
         super().__init__()
-        self.conv1d = CNN1DModel(input_dim)
+        self.conv1d = CNN1DModel(input_dim, activation=cnn_activation)
         self.mp = MeanPooling()
         self.lin = ProjectionHead(
             input_dim, hidden_dim, dropout=0.3, residual_connection=True
@@ -186,9 +186,11 @@ class TransNetwork5(nn.Module):
 
 
 class TransNetwork7(nn.Module):
-    def __init__(self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS):
+    def __init__(
+        self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS, cnn_activation="relu"
+    ):
         super().__init__()
-        self.conv1d = LightCNN1DModel(input_dim)
+        self.conv1d = LightCNN1DModel(input_dim, activation=cnn_activation)
         self.mp = MeanPooling()
         self.lin = ProjectionHead(
             input_dim, hidden_dim, dropout=0.3, residual_connection=True
@@ -228,9 +230,11 @@ class TransNetwork8(nn.Module):
 
 
 class TransNetwork9(nn.Module):
-    def __init__(self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS):
+    def __init__(
+        self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS, cnn_activation="relu"
+    ):
         super().__init__()
-        self.conv1d = LightCNN1DModel(input_dim)
+        self.conv1d = LightCNN1DModel(input_dim, activation=cnn_activation)
         self.mp = MeanPooling()
         self.lin = ProjectionHead(
             input_dim, hidden_dim, dropout=0.3, residual_connection=True
@@ -247,9 +251,11 @@ class TransNetwork9(nn.Module):
 
 
 class TransNetwork10(nn.Module):
-    def __init__(self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS):
+    def __init__(
+        self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS, cnn_activation="relu"
+    ):
         super().__init__()
-        self.conv1d = VeryLightCNN1DModel(input_dim)
+        self.conv1d = VeryLightCNN1DModel(input_dim, activation=cnn_activation)
         self.mp = MeanPooling()
         self.lin = ProjectionHead(
             input_dim, hidden_dim, dropout=0.3, residual_connection=True
