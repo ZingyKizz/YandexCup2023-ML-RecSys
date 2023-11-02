@@ -1,5 +1,5 @@
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 import numpy as np
 from sklearn.model_selection import KFold
 from lib.const import NUM_TAGS
@@ -8,10 +8,11 @@ from lib.data.augmentations import AugmentationList
 
 
 class TaggingDataset(Dataset):
-    def __init__(self, df, track_idx2embeds, testing=False):
+    def __init__(self, df, track_idx2embeds, testing=False, weight_power=0.5):
         self.df = df
         self.track_idx2embeds = track_idx2embeds
         self.testing = testing
+        self.weights = self._get_track_weights(df, weight_power)
 
     def __len__(self):
         return self.df.shape[0]
@@ -27,6 +28,19 @@ class TaggingDataset(Dataset):
         target = np.zeros(NUM_TAGS)
         target[tags] = 1
         return track_idx, embeds, target
+
+    @staticmethod
+    def _get_track_weights(df, weight_power):
+        w = df.copy()
+        w["tags"] = w["tags"].str.split(",")
+        w = w.explode("tags")
+        w["tag_cnt"] = w.groupby("tags").transform("count") / len(w)
+        w["tag_weight"] = 1 / np.power(w["tag_cnt"], weight_power)
+        res = df.merge(
+            w.groupby("track", as_index=False)["tag_weight"].mean(), on=["track"]
+        )
+        weights = torch.from_numpy(res["tag_weight"].to_numpy())
+        return weights
 
 
 class Collator:
@@ -85,7 +99,11 @@ def make_dataloader(
         df=df,
         track_idx2embeds=track_idx2embeds,
         testing=testing_dataset,
+        weight_power=cfg.get("dataset_weight_power", 0.5)
     )
+    sampler = None
+    if cfg.get("dataset_sample_weights", False) and (not testing_collator):
+        sampler = WeightedRandomSampler(dataset.weights, len(dataset.weights))
     dataloader = DataLoader(
         dataset,
         batch_size=cfg["batch_size"],
@@ -97,6 +115,7 @@ def make_dataloader(
             augmentations=cfg.get("augmentations", {}),
         ),
         drop_last=False,
+        sampler=sampler,
     )
     return dataloader
 
