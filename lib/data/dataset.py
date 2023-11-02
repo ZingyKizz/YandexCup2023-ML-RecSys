@@ -108,7 +108,7 @@ def make_dataloader(
     dataloader = DataLoader(
         dataset,
         batch_size=cfg["batch_size"],
-        shuffle=not testing_dataset,
+        shuffle=(not testing_dataset) and (sampler is None),
         collate_fn=make_instance(
             cfg["collator"],
             max_len=cfg["max_len"],
