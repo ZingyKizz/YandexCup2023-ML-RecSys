@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from gem import GeM
 
 
 class Conv1dBlock(nn.Module):
@@ -176,5 +177,39 @@ class VeryLightCNN1DModel(nn.Module):
         x = self.pooling(x)
         x = self.conv_block2(x)
         x = self.pooling(x)
+        x = torch.transpose(x, 1, 2)
+        return x
+
+
+class GemLightCNN1DModel(nn.Module):
+    def __init__(self, in_channels, activation="relu"):
+        super().__init__()
+        self.conv_block1 = Conv1dBlock(
+            in_channels=in_channels,
+            out_channels=2 * in_channels,
+            skip_connection=True,
+            activation=activation,
+        )
+        self.conv_block2 = Conv1dBlock(
+            in_channels=2 * in_channels,
+            out_channels=2 * in_channels,
+            skip_connection=True,
+            activation=activation,
+        )
+        self.conv_block3 = Conv1dBlock(
+            in_channels=2 * in_channels,
+            out_channels=in_channels,
+            skip_connection=True,
+            activation=activation,
+        )
+        self.pooling = GeM(kernel_size=3)
+
+    def forward(self, x):
+        x = torch.transpose(x, 1, 2)
+        x = self.conv_block1(x)
+        x = self.pooling(x)
+        x = self.conv_block2(x)
+        x = self.pooling(x)
+        x = self.conv_block3(x)
         x = torch.transpose(x, 1, 2)
         return x
