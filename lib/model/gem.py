@@ -19,16 +19,4 @@ class GeM(nn.Module):
         return self.gem(x, p=self.p, eps=self.eps)
 
     def gem(self, x, p=3, eps=1e-6):
-        return F.avg_pool1d(x.clamp(min=eps).pow(p), self.kernel_size).pow(1.0 / p)
-
-    def __repr__(self):
-        return (
-            self.__class__.__name__
-            + "("
-            + "p="
-            + "{:.4f}".format(self.p.data.tolist()[0])
-            + ", "
-            + "eps="
-            + str(self.eps)
-            + ")"
-        )
+        return F.avg_pool1d(x.clamp(min=eps).pow(p), self.kernel_size, padding=1, stride=1).pow(1.0 / p)
