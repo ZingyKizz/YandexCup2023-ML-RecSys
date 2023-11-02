@@ -29,8 +29,9 @@ class TaggingDataset(Dataset):
         target[tags] = 1
         return track_idx, embeds, target
 
-    @staticmethod
-    def _get_track_weights(df, weight_power):
+    def _get_track_weights(self, df, weight_power):
+        if self.testing:
+            return None
         w = df.copy()
         w["tags"] = w["tags"].str.split(",")
         w = w.explode("tags")
