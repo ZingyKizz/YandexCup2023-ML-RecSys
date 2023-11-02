@@ -11,7 +11,7 @@ from lib.training.optimizer import get_grouped_parameters
 
 
 def batch_to_device(embeds):
-    if isinstance(embeds, list):
+    if isinstance(embeds, tuple):
         return [x.to(DEVICE) for x in embeds]
     return embeds.to(DEVICE)
 
@@ -22,11 +22,10 @@ def train_epoch(model, loader, criterion, optimizer, scheduler=None):
     alpha = 0.8
     for iteration, data in enumerate(loader):
         optimizer.zero_grad()
-        track_idxs, (embeds, attention_mask), target = data
-        embeds = batch_to_device(embeds)
-        attention_mask = batch_to_device(attention_mask)
+        track_idxs, x, target = data
+        x = batch_to_device(x)
         target = target.to(DEVICE)
-        pred_logits = model(embeds, attention_mask=attention_mask)
+        pred_logits = model(*x)
         ce_loss = criterion(pred_logits, target)
         ce_loss.backward()
         optimizer.step()
@@ -51,10 +50,9 @@ def predict(model, loader):
     track_idxs = []
     predictions = []
     for data in loader:
-        track_idx, (embeds, attention_mask), _ = data
-        embeds = batch_to_device(embeds)
-        attention_mask = batch_to_device(attention_mask)
-        pred_logits = model(embeds, attention_mask=attention_mask)
+        track_idx, x, _ = data
+        x = batch_to_device(x)
+        pred_logits = model(*x)
         pred_probs = torch.sigmoid(pred_logits)
         predictions.append(pred_probs.cpu().detach().numpy())
         track_idxs.append(track_idx.cpu().detach().numpy())

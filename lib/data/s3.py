@@ -72,6 +72,19 @@ def load_tag_data(s3_client=None, bucket_name=None, keys=None, paths=None):
     return res
 
 
+def load_track_knn(s3_client=None, bucket_name=None, keys=None, paths=None):
+    track_idx2knn = {}
+    for s3_object in s3_objects(s3_client, bucket_name, keys, paths):
+        with zipfile.ZipFile(s3_object) as zf:
+            for file in zf.namelist():
+                if file.endswith(".npy"):
+                    with zf.open(file) as f:
+                        track_idx = int(extract_name(f))
+                        embeds = np.load(f)
+                        track_idx2knn[track_idx] = embeds
+    return track_idx2knn
+
+
 def load_data(cfg):
     tag_data = load_tag_data(paths=[os.path.join(cfg["data_path"], "data.zip")])
     track_idx2embeds = load_track_embeddings(
@@ -80,4 +93,11 @@ def load_data(cfg):
             for i in range(1, 9)
         ],
     )
-    return tag_data, track_idx2embeds
+    track_idx2knn = None
+    if cfg.get("knn_data", False):
+        track_idx2knn = load_track_knn(
+            paths=[
+                os.path.join(cfg["data_path"], "knn_data.zip")
+            ],
+        )
+    return tag_data, track_idx2embeds, track_idx2knn

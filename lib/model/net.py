@@ -26,7 +26,7 @@ class Network(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, num_classes)
 
-    def forward(self, embeds, **kwargs):
+    def forward(self, embeds, *args, **kwargs):
         x = [self.projector(x) for x in embeds]
         x = [v.mean(0).unsqueeze(0) for v in x]
         x = self.bn(torch.cat(x, dim=0))
@@ -60,7 +60,7 @@ class TransNetwork(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, num_classes)
 
-    def forward(self, embeds, attention_mask=None):
+    def forward(self, embeds, attention_mask=None, *args, **kwargs):
         x = self.encoder_block(
             embeds, src_key_padding_mask=attention_mask.logical_not()
         )
@@ -91,7 +91,7 @@ class TransNetwork1(nn.Module):
         self.lin = ProjectionHead(input_dim, hidden_dim)
         self.fc = nn.Linear(hidden_dim, num_classes)
 
-    def forward(self, embeds, attention_mask=None):
+    def forward(self, embeds, attention_mask=None, *args, **kwargs):
         x = self.encoder_block(
             embeds, src_key_padding_mask=attention_mask.logical_not()
         )
@@ -114,7 +114,7 @@ class TransNetwork2(nn.Module):
         self.lin = ProjectionHead(input_dim, hidden_dim)
         self.fc = nn.Linear(hidden_dim, num_classes)
 
-    def forward(self, embeds, attention_mask=None):
+    def forward(self, embeds, attention_mask=None, *args, **kwargs):
         x = self.encoder(
             inputs_embeds=embeds, attention_mask=attention_mask
         ).last_hidden_state
@@ -139,7 +139,7 @@ class TransNetwork3(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, num_classes)
 
-    def forward(self, embeds, attention_mask=None):
+    def forward(self, embeds, attention_mask=None, *args, **kwargs):
         x = self.encoder(
             inputs_embeds=embeds, attention_mask=attention_mask
         ).last_hidden_state
@@ -162,7 +162,7 @@ class TransNetwork4(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, num_classes)
 
-    def forward(self, embeds, attention_mask=None):
+    def forward(self, embeds, attention_mask=None, *args, **kwargs):
         x = self.encoder(
             inputs_embeds=embeds, attention_mask=attention_mask
         ).last_hidden_state
@@ -184,7 +184,7 @@ class TransNetwork5(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, num_classes)
 
-    def forward(self, x, attention_mask):
+    def forward(self, x, attention_mask, *args, **kwargs):
         x = self.conv1d(x)
         x = self.mp(x, attention_mask=attention_mask)
         x = self.lin(x)
@@ -204,7 +204,7 @@ class TransNetwork7(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, num_classes)
 
-    def forward(self, x, attention_mask):
+    def forward(self, x, attention_mask, *args, **kwargs):
         x = self.conv1d(x)
         x = self.mp(x, attention_mask=attention_mask)
         x = self.lin(x)
@@ -226,7 +226,7 @@ class TransNetwork8(nn.Module):
         self.fc = nn.Linear(hidden_dim, num_classes)
         self.fc.apply(smart_init_weights)
 
-    def forward(self, embeds, attention_mask=None):
+    def forward(self, embeds, attention_mask=None, *args, **kwargs):
         x = self.encoder(
             inputs_embeds=embeds, attention_mask=attention_mask
         ).last_hidden_state
@@ -249,7 +249,7 @@ class TransNetwork9(nn.Module):
         self.fc = nn.Linear(hidden_dim, num_classes)
         self.fc.apply(smart_init_weights)
 
-    def forward(self, x, attention_mask):
+    def forward(self, x, attention_mask, *args, **kwargs):
         x = self.conv1d(x)
         x = self.mp(x, attention_mask=attention_mask)
         x = self.lin(x)
@@ -270,7 +270,7 @@ class TransNetwork10(nn.Module):
         self.fc = nn.Linear(hidden_dim, num_classes)
         self.fc.apply(smart_init_weights)
 
-    def forward(self, x, attention_mask):
+    def forward(self, x, attention_mask, *args, **kwargs):
         x = self.conv1d(x)
         x = self.mp(x, attention_mask=attention_mask)
         x = self.lin(x)
@@ -291,7 +291,7 @@ class TransNetwork11(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, num_classes)
 
-    def forward(self, x, attention_mask):
+    def forward(self, x, attention_mask, *args, **kwargs):
         x = self.ln(x)
         x = self.conv1d(x)
         x = self.mp(x, attention_mask=attention_mask)
@@ -312,7 +312,7 @@ class TransNetwork12(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, num_classes)
 
-    def forward(self, x, attention_mask):
+    def forward(self, x, attention_mask, *args, **kwargs):
         x = self.conv1d(x)
         x = self.mp(x, attention_mask=attention_mask)
         x = self.lin(x)
@@ -331,7 +331,7 @@ class TransNetwork13(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, num_classes)
 
-    def forward(self, x, attention_mask):
+    def forward(self, x, *args, **kwargs):
         x = self.conv1d(x)
         x = x.mean(dim=1)
         x = self.lin(x)
@@ -350,7 +350,7 @@ class TransNetwork14(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, num_classes)
 
-    def forward(self, x, attention_mask):
+    def forward(self, x, *args, **kwargs):
         x = self.conv1d(x)
         x, _ = x.max(dim=1)
         x = self.lin(x)
@@ -370,7 +370,7 @@ class TransNetwork15(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, num_classes)
 
-    def forward(self, x, attention_mask):
+    def forward(self, x, *args, **kwargs):
         x = self.linear(x)
         x = self.conv1d(x)
         x, _ = x.max(dim=1)

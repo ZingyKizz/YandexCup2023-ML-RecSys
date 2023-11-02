@@ -17,18 +17,19 @@ def run_cfg(config_path, files_mode=True):
     cfg_name = cfg["name"]
 
     seed_everything(cfg["seed"])
-    tag_data, track_idx2embeds = load_data(cfg)
+    tag_data, track_idx2embeds, track_idx2knn = load_data(cfg)
 
     test_dataloader = make_dataloader(
         tag_data["test"],
         track_idx2embeds,
+        track_idx2knn,
         cfg,
         testing_dataset=True,
         testing_collator=True,
     )
     model_info_was_printed = False
     if cfg.get("use_cv", True):
-        cv = cross_val_split(tag_data["train"], track_idx2embeds, cfg)
+        cv = cross_val_split(tag_data["train"], track_idx2embeds, track_idx2knn, cfg)
         epochs = cfg.get("cv_n_epochs", 15)
         for fold_idx, (train_dataloader, val_dataloader) in enumerate(cv):
             model, criterion, optimizer, scheduler = init_nn_stuff(cfg)
@@ -70,6 +71,7 @@ def run_cfg(config_path, files_mode=True):
         train_dataloader = make_dataloader(
             tag_data["train"],
             track_idx2embeds,
+            track_idx2knn,
             cfg,
             testing_dataset=False,
             testing_collator=False,
