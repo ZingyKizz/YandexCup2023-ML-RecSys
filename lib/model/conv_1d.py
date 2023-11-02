@@ -27,7 +27,7 @@ class Conv1dBlock(nn.Module):
                 bias=True,
             ),
             nn.BatchNorm1d(out_channels),
-            nn.ReLU(),
+            self._get_activation_module(activation),
             nn.Conv1d(
                 out_channels,
                 out_channels,

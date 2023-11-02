@@ -10,7 +10,7 @@ class GeM(nn.Module):
     """
 
     def __init__(self, kernel_size=8, p=3, eps=1e-6):
-        super(GeM, self).__init__()
+        super().__init__()
         self.p = nn.Parameter(torch.ones(1) * p)
         self.kernel_size = kernel_size
         self.eps = eps
