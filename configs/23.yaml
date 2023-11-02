@@ -1,4 +1,4 @@
-name: "21"
+name: "23"
 
 seed: 11
 data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
@@ -11,7 +11,7 @@ model: model.net.TransNetwork7
 model_params: {
     input_dim: 768,
     hidden_dim: 512,
-    cnn_activation: "relu"
+    cnn_activation: "swish"
 }
 
 
@@ -20,9 +20,9 @@ criterion_params: {
     gamma_neg: 8.0
 }
 
-optimizer: training.optimizer.Adam
+optimizer: training.optimizer.AdamW
 lr: 0.000015
-lr_alpha: 30
+lr_alpha: 50
 optimizer_params: {}
 
 scheduler: training.scheduler.Scheduler
@@ -32,7 +32,7 @@ scheduler_params: {
 }
 
 use_cv: true
-cv_n_epochs: 30
+cv_n_epochs: 40
 cv_min_score_to_save_predictions: 0.25
 
 use_solo: true

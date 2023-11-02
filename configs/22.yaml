@@ -1,8 +1,8 @@
-name: "21"
+name: "22"
 
 seed: 11
 data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
-n_splits: 5
+n_splits: 3
 
 batch_size: 70
 max_len: 128
@@ -33,7 +33,7 @@ scheduler_params: {
 
 use_cv: true
 cv_n_epochs: 30
-cv_min_score_to_save_predictions: 0.25
+cv_min_score_to_save_predictions: 0.23
 
 use_solo: true
 solo_n_epochs: 25
@@ -43,14 +43,14 @@ dataset: data.dataset.TaggingDataset
 collator: data.dataset.CollatorWithAug
 augmentations: {
   AddInversions: {
-    proba: 0.05,
+    proba: 0.3,
     p: 0.1,
   },
   AddNoise: {
-    proba: 0.03,
-    noise: 0.02
+    proba: 0.2,
+    noise: 0.04
   },
   MixUp: {
-    proba: 0.03
+    proba: 0.1
   }
 }
