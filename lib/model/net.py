@@ -352,7 +352,28 @@ class TransNetwork14(nn.Module):
 
     def forward(self, x, attention_mask):
         x = self.conv1d(x)
-        x = x.max(dim=1)
+        x, _ = x.max(dim=1)
+        x = self.lin(x)
+        outs = self.fc(x)
+        return outs
+
+
+class TransNetwork15(nn.Module):
+    def __init__(
+        self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS, cnn_activation="relu"
+    ):
+        super().__init__()
+        self.linear = nn.Linear(input_dim, 2 * input_dim)
+        self.conv1d = GemLightCNN1DModel(2 * input_dim, activation=cnn_activation)
+        self.lin = ProjectionHead(
+            2 * input_dim, hidden_dim, dropout=0.3, residual_connection=True
+        )
+        self.fc = nn.Linear(hidden_dim, num_classes)
+
+    def forward(self, x, attention_mask):
+        x = self.linear(x)
+        x = self.conv1d(x)
+        x, _ = x.max(dim=1)
         x = self.lin(x)
         outs = self.fc(x)
         return outs
