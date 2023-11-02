@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from gem import GeM
+from lib.model.gem import GeM
 
 
 class Conv1dBlock(nn.Module):
