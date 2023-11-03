@@ -192,7 +192,7 @@ class KnnTaggingDataset(Dataset):
         length = len(embeds)
         target = -1
         if self.testing:
-            return track_idx, embeds, target
+            return track_idx, (embeds, knn, length), target
         tags = [int(x) for x in row.tags.split(",")]
         target = np.zeros(NUM_TAGS)
         target[tags] = 1
