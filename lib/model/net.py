@@ -390,18 +390,19 @@ class TransNetwork16(nn.Module):
         )
         self.mp = MeanPooling()
         self.conv1d = GemLightCNN1DModel(input_dim, activation=cnn_activation)
+        self.ln = nn.LayerNorm(1024)
         self.lin = ProjectionHead(
-            input_dim + input_dim // 2, hidden_dim, dropout=0.3, residual_connection=True
+            1024, hidden_dim, dropout=0.3, residual_connection=True
         )
         self.fc = nn.Linear(hidden_dim, num_classes)
 
     def forward(self, embeds, attention_mask, knn_embeds, length, *args, **kwargs):
         x = self.conv1d(embeds)
         x = self.mp(x, attention_mask=attention_mask)
-        y = self.knn_linear(knn_embeds)
+        y = self.knn_linear(knn_embeds.tranpose(1, 2))
         y = y.mean(dim=-1)
         z = torch.cat([x, y], dim=-1)
+        z = self.ln(z)
         z = self.lin(z)
         outs = self.fc(z)
         return outs
-
