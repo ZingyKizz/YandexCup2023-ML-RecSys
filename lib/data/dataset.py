@@ -8,7 +8,7 @@ from lib.data.augmentations import AugmentationList
 
 
 class TaggingDataset(Dataset):
-    def __init__(self, df, track_idx2embeds, testing=False, weight_power=0.5):
+    def __init__(self, df, track_idx2embeds, *, testing=False, weight_power=0.5, **kwargs):
         self.df = df
         self.track_idx2embeds = track_idx2embeds
         self.testing = testing
@@ -45,7 +45,7 @@ class TaggingDataset(Dataset):
 
 
 class Collator:
-    def __init__(self, max_len=None, **kwargs):
+    def __init__(self, max_len=None, *args, **kwargs):
         self.max_len = max_len
 
     def __call__(self, b):
@@ -65,7 +65,7 @@ class Collator:
 
 
 class RandomMomentCollator:
-    def __init__(self, max_len=None, testing=False, **kwargs):
+    def __init__(self, max_len=None, testing=False, *args, **kwargs):
         self.max_len = max_len
         self.testing = testing
 
@@ -149,7 +149,7 @@ def cross_val_split(df, track_idx2embeds, track_idx2knn, cfg):
 
 
 class CollatorWithAug:
-    def __init__(self, max_len=None, augmentations=None, testing=False, **kwargs):
+    def __init__(self, max_len=None, augmentations=None, testing=False, *args, **kwargs):
         self.max_len = max_len
         self.augmentations = (
             AugmentationList(augmentations, max_len) if not testing else lambda x: x
@@ -174,7 +174,7 @@ class CollatorWithAug:
 
 
 class KnnTaggingDataset(Dataset):
-    def __init__(self, df, track_idx2embeds, track_idx2knn, testing=False, weight_power=0.5):
+    def __init__(self, df, track_idx2embeds, track_idx2knn, testing=False, weight_power=0.5, *args, **kwargs):
         self.df = df
         self.track_idx2embeds = track_idx2embeds
         self.track_idx2knn = track_idx2knn
@@ -214,7 +214,7 @@ class KnnTaggingDataset(Dataset):
 
 
 class KnnCollatorWithAug:
-    def __init__(self, max_len=None, augmentations=None, testing=False, **kwargs):
+    def __init__(self, max_len=None, augmentations=None, testing=False, *args, **kwargs):
         self.max_len = max_len
         self.augmentations = (
             AugmentationList(augmentations, max_len) if not testing else lambda x: x

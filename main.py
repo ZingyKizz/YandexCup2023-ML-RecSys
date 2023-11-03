@@ -97,4 +97,4 @@ def main(config_paths, files_mode=True):
 
 
 if __name__ == "__main__":
-    main(["configs/20.yaml"])
+    main(["configs/24.yaml"])
