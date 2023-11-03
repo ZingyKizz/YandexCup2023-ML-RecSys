@@ -39,8 +39,8 @@ use_solo: true
 solo_n_epochs: 25
 solo_save_last_n_epochs: 3
 
-dataset: data.dataset.TaggingDataset
-collator: data.dataset.CollatorWithAug
+dataset: data.dataset.KnnTaggingDataset
+collator: data.dataset.KnnCollatorWithAug
 augmentations: {
   AddInversions: {
     proba: 0.05,
