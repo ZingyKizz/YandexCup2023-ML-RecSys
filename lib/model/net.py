@@ -399,7 +399,7 @@ class TransNetwork16(nn.Module):
     def forward(self, embeds, attention_mask, knn_embeds, length, *args, **kwargs):
         x = self.conv1d(embeds)
         x = self.mp(x, attention_mask=attention_mask)
-        y = self.knn_linear(knn_embeds.tranpose(1, 2))
+        y = self.knn_linear(knn_embeds.transpose(1, 2))
         y = y.mean(dim=-1)
         z = torch.cat([x, y], dim=-1)
         z = self.ln(z)
