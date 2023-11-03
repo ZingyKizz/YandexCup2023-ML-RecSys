@@ -7,7 +7,7 @@ n_splits: 3
 batch_size: 70
 max_len: 128
 
-model: model.net.TransNetwork12
+model: model.net.TransNetwork16
 model_params: {
     input_dim: 768,
     hidden_dim: 512,
@@ -40,8 +40,6 @@ solo_n_epochs: 25
 solo_save_last_n_epochs: 3
 
 dataset: data.dataset.TaggingDataset
-dataset_sample_weights: true
-dataset_weight_power: 1
 collator: data.dataset.CollatorWithAug
 augmentations: {
   AddInversions: {
@@ -56,3 +54,4 @@ augmentations: {
     proba: 0.03
   }
 }
+knn_data: true

@@ -384,18 +384,23 @@ class TransNetwork16(nn.Module):
         self, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS, cnn_activation="relu"
     ):
         super().__init__()
-        self.linear = nn.Linear(input_dim, 2 * input_dim)
-        self.conv1d = GemLightCNN1DModel(2 * input_dim, activation=cnn_activation)
+        self.knn_linear = nn.Sequential(
+            nn.Linear(72, input_dim // 2),
+            nn.ReLU()
+        )
+        self.conv1d = GemLightCNN1DModel(input_dim, activation=cnn_activation)
         self.lin = ProjectionHead(
-            2 * input_dim, hidden_dim, dropout=0.3, residual_connection=True
+            input_dim + input_dim // 2, hidden_dim, dropout=0.3, residual_connection=True
         )
         self.fc = nn.Linear(hidden_dim, num_classes)
 
-    def forward(self, x, *args, **kwargs):
-        x = self.linear(x)
-        x = self.conv1d(x)
-        x, _ = x.max(dim=1)
-        x = self.lin(x)
-        outs = self.fc(x)
+    def forward(self, embeds, attention_mask, knn_embeds, length, *args, **kwargs):
+        x = self.conv1d(embeds)
+        x = self.mp(x, attention_mask=attention_mask)
+        y = self.knn_linear(knn_embeds)
+        y = y.mean(dim=-1)
+        z = torch.cat([x, y], dim=-1)
+        z = self.lin(z)
+        outs = self.fc(z)
         return outs
 
