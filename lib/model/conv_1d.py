@@ -13,6 +13,7 @@ class Conv1dBlock(nn.Module):
         padding=(2,),
         skip_connection=False,
         activation="relu",
+        dropout=0.0,
     ):
         super().__init__()
         self.skip_connection = skip_connection
@@ -28,6 +29,7 @@ class Conv1dBlock(nn.Module):
             ),
             nn.BatchNorm1d(out_channels),
             self._get_activation_module(activation),
+            nn.Dropout1d(dropout),
             nn.Conv1d(
                 out_channels,
                 out_channels,
@@ -65,6 +67,8 @@ class Conv1dBlock(nn.Module):
             return nn.GELU()
         elif activation == "swish":
             return nn.SiLU()
+        elif activation == "elu":
+            return nn.ELU()
         else:
             raise ValueError
 
@@ -121,25 +125,28 @@ class CNN1DModel(nn.Module):
 
 
 class LightCNN1DModel(nn.Module):
-    def __init__(self, in_channels, activation="relu"):
+    def __init__(self, in_channels, activation="relu", dropout=0.0):
         super().__init__()
         self.conv_block1 = Conv1dBlock(
             in_channels=in_channels,
             out_channels=2 * in_channels,
             skip_connection=True,
             activation=activation,
+            dropout=dropout,
         )
         self.conv_block2 = Conv1dBlock(
             in_channels=2 * in_channels,
             out_channels=2 * in_channels,
             skip_connection=True,
             activation=activation,
+            dropout=dropout,
         )
         self.conv_block3 = Conv1dBlock(
             in_channels=2 * in_channels,
             out_channels=in_channels,
             skip_connection=True,
             activation=activation,
+            dropout=dropout,
         )
         self.pooling = nn.AvgPool1d(kernel_size=(3,), stride=(1,), padding=(1,))
 
@@ -155,19 +162,21 @@ class LightCNN1DModel(nn.Module):
 
 
 class VeryLightCNN1DModel(nn.Module):
-    def __init__(self, in_channels, activation="relu"):
+    def __init__(self, in_channels, activation="relu", dropout=0.0):
         super().__init__()
         self.conv_block1 = Conv1dBlock(
             in_channels=in_channels,
             out_channels=in_channels,
             skip_connection=True,
             activation=activation,
+            dropout=dropout,
         )
         self.conv_block2 = Conv1dBlock(
             in_channels=in_channels,
             out_channels=in_channels,
             skip_connection=True,
             activation=activation,
+            dropout=dropout,
         )
         self.pooling = nn.AvgPool1d(kernel_size=(3,), stride=(1,), padding=(1,))
 
@@ -182,25 +191,28 @@ class VeryLightCNN1DModel(nn.Module):
 
 
 class GemLightCNN1DModel(nn.Module):
-    def __init__(self, in_channels, activation="relu"):
+    def __init__(self, in_channels, activation="relu", dropout=0.0):
         super().__init__()
         self.conv_block1 = Conv1dBlock(
             in_channels=in_channels,
             out_channels=2 * in_channels,
             skip_connection=True,
             activation=activation,
+            dropout=dropout,
         )
         self.conv_block2 = Conv1dBlock(
             in_channels=2 * in_channels,
             out_channels=2 * in_channels,
             skip_connection=True,
             activation=activation,
+            dropout=dropout,
         )
         self.conv_block3 = Conv1dBlock(
             in_channels=2 * in_channels,
             out_channels=in_channels,
             skip_connection=True,
             activation=activation,
+            dropout=dropout,
         )
         self.pooling = GeM(kernel_size=3)
 
@@ -211,5 +223,28 @@ class GemLightCNN1DModel(nn.Module):
         x = self.conv_block2(x)
         x = self.pooling(x)
         x = self.conv_block3(x)
+        x = torch.transpose(x, 1, 2)
+        return x
+
+
+class GemVeryLightCNN1DModel(nn.Module):
+    def __init__(self, channels, activation="relu", dropout=0.0):
+        super().__init__()
+        self.convolutions = nn.ModuleList([
+            Conv1dBlock(
+                in_channels=in_channels,
+                out_channels=out_channels,
+                skip_connection=True,
+                activation=activation,
+                dropout=dropout,
+            ) for in_channels, out_channels in channels
+        ])
+        self.pooling = GeM(kernel_size=3)
+
+    def forward(self, x):
+        x = torch.transpose(x, 1, 2)
+        for conv in self.convolutions:
+            x = conv(x)
+            x = self.pooling(x)
         x = torch.transpose(x, 1, 2)
         return x

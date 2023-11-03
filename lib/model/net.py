@@ -9,6 +9,7 @@ from lib.model.conv_1d import (
     LightCNN1DModel,
     VeryLightCNN1DModel,
     GemLightCNN1DModel,
+    GemVeryLightCNN1DModel,
 )
 
 
@@ -406,4 +407,24 @@ class TransNetwork16(nn.Module):
         z = x + y
         z = self.lin(z)
         outs = self.fc(z)
+        return outs
+
+
+class TransNetwork17(nn.Module):
+    def __init__(
+        self, channels, hidden_dim=512, num_classes=NUM_TAGS, cnn_activation="relu", cnn_dropout=0,
+    ):
+        super().__init__()
+        self.conv1d = GemVeryLightCNN1DModel(channels, activation=cnn_activation, dropout=cnn_dropout)
+        self.mp = MeanPooling()
+        self.lin = ProjectionHead(
+            channels[-1][1], hidden_dim, dropout=0.3, residual_connection=True
+        )
+        self.fc = nn.Linear(hidden_dim, num_classes)
+
+    def forward(self, x, attention_mask, *args, **kwargs):
+        x = self.conv1d(x)
+        x = self.mp(x, attention_mask=attention_mask)
+        x = self.lin(x)
+        outs = self.fc(x)
         return outs
