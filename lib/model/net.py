@@ -388,6 +388,7 @@ class TransNetwork16(nn.Module):
             nn.Linear(72, input_dim // 2),
             nn.ReLU()
         )
+        self.mp = MeanPooling()
         self.conv1d = GemLightCNN1DModel(input_dim, activation=cnn_activation)
         self.lin = ProjectionHead(
             input_dim + input_dim // 2, hidden_dim, dropout=0.3, residual_connection=True
