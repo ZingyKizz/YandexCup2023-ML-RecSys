@@ -239,7 +239,7 @@ class GemVeryLightCNN1DModel(nn.Module):
                     activation=activation,
                     dropout=dropout,
                 ),
-                GeM(kernel_size=min(7 - i, 3))
+                GeM(kernel_size=3)
             ) for i, (in_channels, out_channels) in enumerate(channels)
         ])
 
