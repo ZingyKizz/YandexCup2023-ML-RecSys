@@ -229,7 +229,7 @@ class KnnCollatorWithAug:
         embeds = torch.nn.utils.rnn.pad_sequence(embeds, batch_first=True)
         targets = np.vstack([x[2] for x in b])
         targets = torch.from_numpy(targets)
-        knn_embeds = torch.from_numpy(np.vstack([x[1][1] for x in b])).float()
+        knn_embeds = torch.from_numpy(np.vstack([x[1][1][np.newaxis, :, :] for x in b])).float()
         length = torch.from_numpy(np.vstack([x[1][2] for x in b])).float() / 404
         return track_idxs, (embeds, attention_mask, knn_embeds, length), targets
 
