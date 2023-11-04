@@ -1,4 +1,4 @@
-name: "29"
+name: "30"
 
 seed: 11
 data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
@@ -7,18 +7,16 @@ n_splits: 3
 batch_size: 70
 max_len: 128
 
-model: model.net.TransNetwork18
+model: model.net.TransNetwork19
 model_params: {
   in_channels: 768,
   base_filters: 64,
-  ratio: 1.0,
-  filter_list: [64, 160, 160, 400, 400, 1024, 1024],
-  m_blocks_list: [2, 2, 2, 3, 3, 4, 4],
-  kernel_size: 16,
-  stride: 2,
-  groups_width: 16,
+  kernel_size: 3,
+  stride: 1,
   verbose: false,
-  n_classes: 256
+  n_classes: 256,
+  n_block: 12,
+  groups: 1
 }
 
 
