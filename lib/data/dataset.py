@@ -8,7 +8,9 @@ from lib.data.augmentations import AugmentationList
 
 
 class TaggingDataset(Dataset):
-    def __init__(self, df, track_idx2embeds, *, testing=False, weight_power=0.5, **kwargs):
+    def __init__(
+        self, df, track_idx2embeds, *, testing=False, weight_power=0.5, **kwargs
+    ):
         self.df = df
         self.track_idx2embeds = track_idx2embeds
         self.testing = testing
@@ -93,7 +95,12 @@ class RandomMomentCollator:
 
 
 def make_dataloader(
-    df, track_idx2embeds, track_idx2knn, cfg, testing_dataset=False, testing_collator=False
+    df,
+    track_idx2embeds,
+    track_idx2knn,
+    cfg,
+    testing_dataset=False,
+    testing_collator=False,
 ):
     dataset = make_instance(
         cfg["dataset"],
@@ -101,7 +108,7 @@ def make_dataloader(
         track_idx2embeds=track_idx2embeds,
         track_idx2knn=track_idx2knn,
         testing=testing_dataset,
-        weight_power=cfg.get("dataset_weight_power", 0.5)
+        weight_power=cfg.get("dataset_weight_power", 0.5),
     )
     sampler = None
     if cfg.get("dataset_sample_weights", False) and (not testing_collator):
@@ -149,7 +156,9 @@ def cross_val_split(df, track_idx2embeds, track_idx2knn, cfg):
 
 
 class CollatorWithAug:
-    def __init__(self, max_len=None, augmentations=None, testing=False, *args, **kwargs):
+    def __init__(
+        self, max_len=None, augmentations=None, testing=False, *args, **kwargs
+    ):
         self.max_len = max_len
         self.augmentations = (
             AugmentationList(augmentations, max_len) if not testing else lambda x: x
@@ -174,7 +183,16 @@ class CollatorWithAug:
 
 
 class KnnTaggingDataset(Dataset):
-    def __init__(self, df, track_idx2embeds, track_idx2knn, testing=False, weight_power=0.5, *args, **kwargs):
+    def __init__(
+        self,
+        df,
+        track_idx2embeds,
+        track_idx2knn,
+        testing=False,
+        weight_power=0.5,
+        *args,
+        **kwargs
+    ):
         self.df = df
         self.track_idx2embeds = track_idx2embeds
         self.track_idx2knn = track_idx2knn
@@ -214,7 +232,9 @@ class KnnTaggingDataset(Dataset):
 
 
 class KnnCollatorWithAug:
-    def __init__(self, max_len=None, augmentations=None, testing=False, *args, **kwargs):
+    def __init__(
+        self, max_len=None, augmentations=None, testing=False, *args, **kwargs
+    ):
         self.max_len = max_len
         self.augmentations = (
             AugmentationList(augmentations, max_len) if not testing else lambda x: x
@@ -229,7 +249,9 @@ class KnnCollatorWithAug:
         embeds = torch.nn.utils.rnn.pad_sequence(embeds, batch_first=True)
         targets = np.vstack([x[2] for x in b])
         targets = torch.from_numpy(targets)
-        knn_embeds = torch.from_numpy(np.vstack([x[1][1][np.newaxis, :, :] for x in b])).float()
+        knn_embeds = torch.from_numpy(
+            np.vstack([x[1][1][np.newaxis, :, :] for x in b])
+        ).float()
         length = torch.from_numpy(np.vstack([x[1][2] for x in b])).float() / 404
         return track_idxs, (embeds, attention_mask, knn_embeds, length), targets
 

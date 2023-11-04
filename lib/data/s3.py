@@ -96,8 +96,6 @@ def load_data(cfg):
     track_idx2knn = None
     if cfg.get("knn_data", False):
         track_idx2knn = load_track_knn(
-            paths=[
-                os.path.join(cfg["data_path"], "knn_data.zip")
-            ],
+            paths=[os.path.join(cfg["data_path"], "knn_data.zip")],
         )
     return tag_data, track_idx2embeds, track_idx2knn

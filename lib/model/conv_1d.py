@@ -230,18 +230,21 @@ class GemLightCNN1DModel(nn.Module):
 class GemVeryLightCNN1DModel(nn.Module):
     def __init__(self, channels, activation="relu", dropout=0.0):
         super().__init__()
-        self.convolutions = nn.ModuleList([
-            nn.Sequential(
-                Conv1dBlock(
-                    in_channels=in_channels,
-                    out_channels=out_channels,
-                    skip_connection=True,
-                    activation=activation,
-                    dropout=dropout,
-                ),
-                GeM(kernel_size=3)
-            ) for i, (in_channels, out_channels) in enumerate(channels)
-        ])
+        self.convolutions = nn.ModuleList(
+            [
+                nn.Sequential(
+                    Conv1dBlock(
+                        in_channels=in_channels,
+                        out_channels=out_channels,
+                        skip_connection=True,
+                        activation=activation,
+                        dropout=dropout,
+                    ),
+                    GeM(kernel_size=3),
+                )
+                for i, (in_channels, out_channels) in enumerate(channels)
+            ]
+        )
 
     def forward(self, x):
         x = torch.transpose(x, 1, 2)

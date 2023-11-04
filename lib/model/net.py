@@ -11,6 +11,8 @@ from lib.model.conv_1d import (
     GemLightCNN1DModel,
     GemVeryLightCNN1DModel,
 )
+from lib.model.net_1d import Net1D
+from lib.model.resnet_1d import ResNet1D
 
 
 class Network(nn.Module):
@@ -389,7 +391,7 @@ class TransNetwork16(nn.Module):
             nn.Linear(72, input_dim // 2),
             nn.SiLU(),
             nn.Linear(input_dim // 2, input_dim),
-            nn.LayerNorm(input_dim)
+            nn.LayerNorm(input_dim),
         )
         self.mp = MeanPooling()
         self.conv1d = GemLightCNN1DModel(input_dim, activation=cnn_activation)
@@ -412,10 +414,17 @@ class TransNetwork16(nn.Module):
 
 class TransNetwork17(nn.Module):
     def __init__(
-        self, channels, hidden_dim=512, num_classes=NUM_TAGS, cnn_activation="relu", cnn_dropout=0,
+        self,
+        channels,
+        hidden_dim=512,
+        num_classes=NUM_TAGS,
+        cnn_activation="relu",
+        cnn_dropout=0,
     ):
         super().__init__()
-        self.conv1d = GemVeryLightCNN1DModel(channels, activation=cnn_activation, dropout=cnn_dropout)
+        self.conv1d = GemVeryLightCNN1DModel(
+            channels, activation=cnn_activation, dropout=cnn_dropout
+        )
         self.mp = MeanPooling()
         self.lin = ProjectionHead(
             channels[-1][1], hidden_dim, dropout=0.3, residual_connection=True
@@ -428,3 +437,48 @@ class TransNetwork17(nn.Module):
         x = self.lin(x)
         outs = self.fc(x)
         return outs
+
+
+class TransNetwork18(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.model = Net1D(
+            in_channels=768,
+            base_filters=64,
+            ratio=1.0,
+            filter_list=[64, 160, 160, 400, 400, 1024, 1024],
+            m_blocks_list=[2, 2, 2, 3, 3, 4, 4],
+            kernel_size=3,
+            stride=1,
+            groups_width=16,
+            verbose=False,
+            n_classes=256,
+        )
+
+    def forward(self, x, *args, **kwargs):
+        return self.model(x.transpose(1, 2))
+
+
+class TransNetwork19(nn.Module):
+    def __init__(
+        self,
+        channels,
+        hidden_dim=512,
+        num_classes=NUM_TAGS,
+        cnn_activation="relu",
+        cnn_dropout=0,
+    ):
+        super().__init__()
+        self.model = ResNet1D(
+            in_channels=768,
+            base_filters=64,
+            kernel_size=3,
+            stride=1,
+            verbose=False,
+            n_classes=256,
+            n_block=6,
+            groups=1,
+        )
+
+    def forward(self, x, *args, **kwargs):
+        return self.model(x.tranpose(1, 2))
