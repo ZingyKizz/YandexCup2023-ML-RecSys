@@ -440,45 +440,18 @@ class TransNetwork17(nn.Module):
 
 
 class TransNetwork18(nn.Module):
-    def __init__(self):
+    def __init__(self, **params):
         super().__init__()
-        self.model = Net1D(
-            in_channels=768,
-            base_filters=64,
-            ratio=1.0,
-            filter_list=[64, 160, 160, 400, 400, 1024, 1024],
-            m_blocks_list=[2, 2, 2, 3, 3, 4, 4],
-            kernel_size=3,
-            stride=1,
-            groups_width=16,
-            verbose=False,
-            n_classes=256,
-        )
+        self.model = Net1D(**params)
 
     def forward(self, x, *args, **kwargs):
         return self.model(x.transpose(1, 2))
 
 
 class TransNetwork19(nn.Module):
-    def __init__(
-        self,
-        channels,
-        hidden_dim=512,
-        num_classes=NUM_TAGS,
-        cnn_activation="relu",
-        cnn_dropout=0,
-    ):
+    def __init__(self, **params):
         super().__init__()
-        self.model = ResNet1D(
-            in_channels=768,
-            base_filters=64,
-            kernel_size=3,
-            stride=1,
-            verbose=False,
-            n_classes=256,
-            n_block=6,
-            groups=1,
-        )
+        self.model = ResNet1D(**params)
 
     def forward(self, x, *args, **kwargs):
         return self.model(x.tranpose(1, 2))
