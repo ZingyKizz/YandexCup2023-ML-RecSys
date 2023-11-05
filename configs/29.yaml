@@ -7,18 +7,12 @@ n_splits: 3
 batch_size: 70
 max_len: 128
 
-model: model.net.TransNetwork18
+model: model.net.TransNetwork17
 model_params: {
-  in_channels: 768,
-  base_filters: 64,
-  ratio: 1.0,
-  filter_list: [64, 160, 160, 400, 400, 1024, 1024],
-  m_blocks_list: [2, 2, 2, 3, 3, 4, 4],
-  kernel_size: 16,
-  stride: 2,
-  groups_width: 16,
-  verbose: false,
-  n_classes: 256
+    channels: [[768, 1200], [1200, 1536], [1536, 1200], [1200, 768]],
+    hidden_dim: 768,
+    cnn_activation: "relu",
+    cnn_dropout: 0.05
 }
 
 
@@ -50,7 +44,7 @@ dataset: data.dataset.TaggingDataset
 collator: data.dataset.CollatorWithAug
 augmentations: {
   AddInversions: {
-    proba: 0.05,
+    proba: 0.5,
     p: 0.1,
   },
   AddNoise: {
