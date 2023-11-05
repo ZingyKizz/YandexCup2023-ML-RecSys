@@ -454,4 +454,4 @@ class TransNetwork19(nn.Module):
         self.model = ResNet1D(**params)
 
     def forward(self, x, *args, **kwargs):
-        return self.model(x.tranpose(1, 2))
+        return self.model(x.transpose(1, 2))
