@@ -1,5 +1,10 @@
 import numpy as np
+import torch
 
+def batch(iterable, n=1):
+    l = len(iterable)
+    for ndx in range(0, l, n):
+        yield iterable[ndx:min(ndx + n, l)]
 
 class Augmentation:
     def __init__(self, params, max_len):
@@ -46,19 +51,43 @@ class AddInversions(Augmentation):
         return embeds
 
 
+class TrueMixUp(Augmentation):
+    def __call__(self, x, y=None):
+        if y is None:
+            return x
+        alpha = self.params.get("alpha", 0.5)
+        mixups_per_batch = self.params.get("mixups_per_batch", 1)
+        if self._aug_condition():
+            x, y = torch.clone(x), torch.clone(y)
+            batch_size = x.size(0)
+            mixup_indices_length = min(batch_size, mixups_per_batch * 2)
+            mixup_indices = torch.randperm(batch_size)[:mixup_indices_length]
+            for i, j in batch(mixup_indices, 2):
+                x[i] = alpha * x[i] + (1 - alpha) * x[j]
+                y[i] = alpha * y[i] + (1 - alpha) * y[j]
+        return x, y
+
+
 class AugmentationList:
     NAMES = {
         "AddInversions": AddInversions,
         "AddNoise": AddNoise,
         "MixUp": MixUp,
+        "TrueMixUp": TrueMixUp,
     }
 
     def __init__(self, augmentations, max_len=None):
-        self.augmentations = [
-            self.NAMES[a](params, max_len) for a, params in augmentations.items()
-        ]
+        self.augmentations = {
+            a: self.NAMES[a](params, max_len) for a, params in augmentations.items()
+        }
 
     def __call__(self, embeds):
-        for aug in self.augmentations:
+        for aug in self.augmentations.values():
             embeds = aug(embeds)
         return embeds
+
+    def __getitem__(self, name):
+        return self.augmentations[name]
+
+    def __contains__(self, name):
+        return name in self.augmentations

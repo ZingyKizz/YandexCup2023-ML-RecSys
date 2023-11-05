@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.model_selection import KFold
 from lib.const import NUM_TAGS
 from lib.utils import make_instance
-from lib.data.augmentations import AugmentationList
+from lib.data.augmentations import AugmentationList, true_mixup
 
 
 class TaggingDataset(Dataset):
@@ -173,6 +173,8 @@ class CollatorWithAug:
         embeds = torch.nn.utils.rnn.pad_sequence(embeds, batch_first=True)
         targets = np.vstack([x[2] for x in b])
         targets = torch.from_numpy(targets)
+        if not self.testing and ("TrueMixUp" in self.augmentations):
+            embeds, targets = self.augmentations["TrueMixUp"](embeds, targets)
         return track_idxs, (embeds, attention_mask), targets
 
     @staticmethod
@@ -253,6 +255,8 @@ class KnnCollatorWithAug:
             np.vstack([x[1][1][np.newaxis, :, :] for x in b])
         ).float()
         length = torch.from_numpy(np.vstack([x[1][2] for x in b])).float() / 404
+        if not self.testing and ("TrueMixUp" in self.augmentations):
+            embeds, targets = self.augmentations["TrueMixUp"](embeds, targets)
         return track_idxs, (embeds, attention_mask, knn_embeds, length), targets
 
     @staticmethod
