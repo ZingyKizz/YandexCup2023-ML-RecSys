@@ -1,5 +1,6 @@
 from torch.optim import Adam, AdamW
 from lion_pytorch import Lion
+from pytorch_optimizer import Tiger
 
 
 def get_grouped_parameters(model, lr, alpha):
