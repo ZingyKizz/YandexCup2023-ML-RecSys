@@ -9,10 +9,10 @@ max_len: 128
 
 model: model.net.TransNetwork17
 model_params: {
-    channels: [[768, 1536], [1536, 1536], [1536, 768]],
-    hidden_dim: 512,
+    channels: [[768, 1200], [1200, 1536], [1536, 1200], [1200, 768]],
+    hidden_dim: 768,
     cnn_activation: "relu",
-    cnn_dropout: 0.0
+    cnn_dropout: 0.05
 }
 
 
