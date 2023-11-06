@@ -32,7 +32,7 @@ def run_cfg(config_path, files_mode=True):
         cv = cross_val_split(tag_data["train"], track_idx2embeds, track_idx2knn, cfg)
         epochs = cfg.get("cv_n_epochs", 15)
         for fold_idx, (train_dataloader, val_dataloader) in enumerate(cv):
-            model, criterion, optimizer, scheduler = init_nn_stuff(cfg)
+            model, criterion, optimizer, scheduler, ema = init_nn_stuff(cfg)
 
             if not model_info_was_printed:
                 print(torchinfo.summary(model))
@@ -42,7 +42,7 @@ def run_cfg(config_path, files_mode=True):
             has_predict = False
             for epoch in tqdm(range(epochs)):
                 train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
-                score = validate_after_epoch(model, val_dataloader)
+                score = validate_after_epoch(model, val_dataloader, ema=ema)
                 if not files_mode:
                     continue
                 if score > best_score:
@@ -54,6 +54,7 @@ def run_cfg(config_path, files_mode=True):
                         fold_idx,
                         epoch,
                         score,
+                        ema=ema,
                     )
                     best_score = score
                     has_predict = True
@@ -66,6 +67,7 @@ def run_cfg(config_path, files_mode=True):
                     fold_idx,
                     epoch,
                     score,
+                    ema=ema,
                 )
     if cfg.get("use_solo", True) and files_mode:
         train_dataloader = make_dataloader(
@@ -76,18 +78,19 @@ def run_cfg(config_path, files_mode=True):
             testing_dataset=False,
             testing_collator=False,
         )
-        model, criterion, optimizer, scheduler = init_nn_stuff(cfg)
+        model, criterion, optimizer, scheduler, ema = init_nn_stuff(cfg)
         if not model_info_was_printed:
             print(torchinfo.summary(model))
         epochs = cfg.get("solo_n_epochs", 15)
         for epoch in tqdm(range(epochs)):
-            train_epoch(model, train_dataloader, criterion, optimizer, scheduler)
+            train_epoch(model, train_dataloader, criterion, optimizer, scheduler, ema)
             if epochs - epoch <= cfg.get("solo_save_last_n_epochs", 1):
                 make_test_predictions(
                     model,
                     test_dataloader,
                     path="predictions_test",
                     suffix=f"cfg={cfg_name}__fold_idx=-1__epoch={epoch}__score=-1",
+                    ema=ema,
                 )
 
 

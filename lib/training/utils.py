@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.metrics import average_precision_score
 import pandas as pd
 import os
+from torch_ema import ExponentialMovingAverage
 
 from lib.const import DEVICE
 from lib.utils import make_instance
@@ -16,7 +17,7 @@ def batch_to_device(embeds):
     return embeds.to(DEVICE)
 
 
-def train_epoch(model, loader, criterion, optimizer, scheduler=None):
+def train_epoch(model, loader, criterion, optimizer, scheduler=None, ema=None):
     model.train()
     running_loss = None
     alpha = 0.8
@@ -31,7 +32,8 @@ def train_epoch(model, loader, criterion, optimizer, scheduler=None):
         optimizer.step()
         if scheduler is not None:
             scheduler.step()
-
+        if ema is not None:
+            ema.update()
         if running_loss is None:
             running_loss = ce_loss.item()
         else:
@@ -45,8 +47,11 @@ def train_epoch(model, loader, criterion, optimizer, scheduler=None):
 
 
 @torch.no_grad()
-def predict(model, loader):
+def predict(model, loader, ema=None):
     model.eval()
+    if ema is not None:
+        ema.store()
+        ema.copy_to()
     track_idxs = []
     predictions = []
     for data in loader:
@@ -56,14 +61,16 @@ def predict(model, loader):
         pred_probs = torch.sigmoid(pred_logits)
         predictions.append(pred_probs.cpu().detach().numpy())
         track_idxs.append(track_idx.cpu().detach().numpy())
+    if ema is not None:
+        ema.restore()
     predictions = np.vstack(predictions)
     track_idxs = np.vstack(track_idxs).ravel()
     return track_idxs, predictions
 
 
-def validate_after_epoch(model, loader):
+def validate_after_epoch(model, loader, ema=None):
     ys_true = {x[0]: x[-1] for x in loader.dataset}
-    track_idxs, predictions = predict(model, loader)
+    track_idxs, predictions = predict(model, loader, ema=ema)
     yts, yps = [], []
     for tid, y_pred in zip(track_idxs, predictions):
         yts.append(ys_true[tid])
@@ -73,8 +80,8 @@ def validate_after_epoch(model, loader):
     return score
 
 
-def make_test_predictions(model, test_dataloader, path=None, suffix=None):
-    track_idxs, predictions = predict(model, test_dataloader)
+def make_test_predictions(model, test_dataloader, path=None, suffix=None, ema=None):
+    track_idxs, predictions = predict(model, test_dataloader, ema=ema)
     predictions_df = pd.DataFrame(
         [
             {"track": track, "prediction": ",".join([str(p) for p in probs])}
@@ -92,19 +99,21 @@ def make_test_predictions(model, test_dataloader, path=None, suffix=None):
 
 
 def make_val_test_predictions(
-    model, val_dataloader, test_dataloader, cfg_name, fold_idx, epoch, score
+    model, val_dataloader, test_dataloader, cfg_name, fold_idx, epoch, score, ema=None
 ):
     make_test_predictions(
         model,
         val_dataloader,
         path="predictions_val",
         suffix=f"cfg={cfg_name}__fold_idx={fold_idx}__epoch={epoch}__score={score:.5f}",
+        ema=ema,
     )
     make_test_predictions(
         model,
         test_dataloader,
         path="predictions_test",
         suffix=f"cfg={cfg_name}__fold_idx={fold_idx}__epoch={epoch}__score={score:.5f}",
+        ema=ema,
     )
 
 
@@ -124,4 +133,8 @@ def init_nn_stuff(cfg):
         )
     else:
         scheduler = None
-    return model, criterion, optimizer, scheduler
+    if "ema" in cfg:
+        ema = ExponentialMovingAverage(model.parameters(), decay=cfg.get("ema_decay", 0.99))
+    else:
+        ema = None
+    return model, criterion, optimizer, scheduler, ema
