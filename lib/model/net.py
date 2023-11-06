@@ -475,7 +475,7 @@ class TransNetwork21(nn.Module):
             activation=cnn_params.get("activation", "relu"),
             dropout=cnn_params.get("dropout", 0.0)
         )
-        self.fc = nn.Linear(cnn_params["channels"][-1][1], num_classes)
+        self.fc = nn.Linear(gru_params["hidden_size"], num_classes)
 
     def forward(self, x, *args, **kwargs):
         x = self.conv1d(x)
@@ -507,5 +507,6 @@ class TransNetwork22(nn.Module):
     def forward(self, x, *args, **kwargs):
         x = self.gru(x)[0]
         x = self.conv1d(x)
+        x = x.mean(dim=1)
         outs = self.fc(x)
         return outs
