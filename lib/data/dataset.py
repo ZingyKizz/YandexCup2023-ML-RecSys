@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.model_selection import KFold
 from lib.const import NUM_TAGS
 from lib.utils import make_instance
-from lib.data.augmentations import AugmentationList, true_mixup
+from lib.data.augmentations import AugmentationList
 
 
 class TaggingDataset(Dataset):
