@@ -32,7 +32,7 @@ def train_epoch(model, loader, criterion, optimizer, scheduler=None, ema=None):
         optimizer.step()
         if scheduler is not None:
             scheduler.step()
-        if ema is not None:
+        if (ema is not None) and iteration % 100 == 0:
             ema.update()
         if running_loss is None:
             running_loss = ce_loss.item()
@@ -134,7 +134,7 @@ def init_nn_stuff(cfg):
     else:
         scheduler = None
     if cfg.get("use_ema", False):
-        ema = ExponentialMovingAverage(model.parameters(), decay=cfg.get("ema_decay", 0.99))
+        ema = ExponentialMovingAverage(model.parameters(), decay=cfg.get("ema_decay", 0.995))
     else:
         ema = None
     return model, criterion, optimizer, scheduler, ema
