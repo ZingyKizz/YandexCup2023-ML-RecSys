@@ -1,10 +1,14 @@
 import numpy as np
 import torch
 
+
 def batch(iterable, n=1):
     l = len(iterable)
     for ndx in range(0, l, n):
-        yield iterable[ndx:min(ndx + n, l)]
+        item = iterable[ndx : ndx + n]
+        if len(item) == n:
+            yield item
+
 
 class Augmentation:
     def __init__(self, params, max_len):
