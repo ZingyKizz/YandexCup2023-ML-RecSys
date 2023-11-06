@@ -52,7 +52,7 @@ augmentations: {
     noise: 0.02
   },
   MixUp: {
-    proba: 0.0
+    proba: 0.01
   },
   TrueMixUp: {
     proba: 1.0,

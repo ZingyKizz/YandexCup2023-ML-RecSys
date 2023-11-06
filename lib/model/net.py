@@ -455,3 +455,57 @@ class TransNetwork19(nn.Module):
 
     def forward(self, x, *args, **kwargs):
         return self.model(x.transpose(1, 2))
+
+
+class TransNetwork21(nn.Module):
+    def __init__(
+        self,
+        cnn_params,
+        gru_params,
+        num_classes=NUM_TAGS,
+    ):
+        super().__init__()
+        self.gru = nn.GRU(
+            input_size=gru_params["input_size"],
+            hidden_size=gru_params["hidden_size"],
+            batch_first=True
+        )
+        self.conv1d = GemVeryLightCNN1DModel(
+            cnn_params["channels"],
+            activation=cnn_params.get("activation", "relu"),
+            dropout=cnn_params.get("dropout", 0.0)
+        )
+        self.fc = nn.Linear(cnn_params["channels"][-1][1], num_classes)
+
+    def forward(self, x, *args, **kwargs):
+        x = self.conv1d(x)
+        x = self.gru(x)[1].squeeze(0)
+        outs = self.fc(x)
+        return outs
+
+
+class TransNetwork22(nn.Module):
+    def __init__(
+        self,
+        cnn_params,
+        gru_params,
+        num_classes=NUM_TAGS,
+    ):
+        super().__init__()
+        self.gru = nn.GRU(
+            input_size=gru_params["input_size"],
+            hidden_size=gru_params["hidden_size"],
+            batch_first=True
+        )
+        self.conv1d = GemVeryLightCNN1DModel(
+            cnn_params["channels"],
+            activation=cnn_params.get("activation", "relu"),
+            dropout=cnn_params.get("dropout", 0.0)
+        )
+        self.fc = nn.Linear(cnn_params["channels"][-1][1], num_classes)
+
+    def forward(self, x, *args, **kwargs):
+        x = self.gru(x)[0]
+        x = self.conv1d(x)
+        outs = self.fc(x)
+        return outs
