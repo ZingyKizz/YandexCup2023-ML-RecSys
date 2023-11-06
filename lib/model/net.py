@@ -426,15 +426,16 @@ class TransNetwork17(nn.Module):
             channels, activation=cnn_activation, dropout=cnn_dropout
         )
         self.mp = MeanPooling()
-        self.lin = ProjectionHead(
-            channels[-1][1], hidden_dim, dropout=0.3, residual_connection=True
+        self.fc = nn.Sequential(
+            ProjectionHead(
+                channels[-1][1], hidden_dim, dropout=0.3, residual_connection=True
+            ),
+            nn.Linear(hidden_dim, num_classes),
         )
-        self.fc = nn.Linear(hidden_dim, num_classes)
 
     def forward(self, x, attention_mask, *args, **kwargs):
         x = self.conv1d(x)
         x = self.mp(x, attention_mask=attention_mask)
-        x = self.lin(x)
         outs = self.fc(x)
         return outs
 
@@ -468,12 +469,12 @@ class TransNetwork21(nn.Module):
         self.gru = nn.GRU(
             input_size=gru_params["input_size"],
             hidden_size=gru_params["hidden_size"],
-            batch_first=True
+            batch_first=True,
         )
         self.conv1d = GemVeryLightCNN1DModel(
             cnn_params["channels"],
             activation=cnn_params.get("activation", "relu"),
-            dropout=cnn_params.get("dropout", 0.0)
+            dropout=cnn_params.get("dropout", 0.0),
         )
         self.fc = nn.Linear(gru_params["hidden_size"], num_classes)
 
@@ -495,12 +496,12 @@ class TransNetwork22(nn.Module):
         self.gru = nn.GRU(
             input_size=gru_params["input_size"],
             hidden_size=gru_params["hidden_size"],
-            batch_first=True
+            batch_first=True,
         )
         self.conv1d = GemVeryLightCNN1DModel(
             cnn_params["channels"],
             activation=cnn_params.get("activation", "relu"),
-            dropout=cnn_params.get("dropout", 0.0)
+            dropout=cnn_params.get("dropout", 0.0),
         )
         self.fc = nn.Linear(cnn_params["channels"][-1][1], num_classes)
 
