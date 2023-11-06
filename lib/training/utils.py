@@ -32,7 +32,7 @@ def train_epoch(model, loader, criterion, optimizer, scheduler=None, ema=None):
         optimizer.step()
         if scheduler is not None:
             scheduler.step()
-        if (ema is not None) and iteration % 100 == 0:
+        if ema is not None:
             ema.update()
         if running_loss is None:
             running_loss = ce_loss.item()
