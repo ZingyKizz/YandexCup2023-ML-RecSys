@@ -87,7 +87,7 @@ class WOTaggingDataset(Dataset):
     def _preprocess(self, df):
         if self.testing:
             return df
-        mask = df["tags"].str.split(",").str.len().between(2, 11)
+        mask = df["tags"].str.split(",").str.len().between(2, 10)
         return df.loc[mask].copy()
 
 
