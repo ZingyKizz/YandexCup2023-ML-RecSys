@@ -133,7 +133,7 @@ def init_nn_stuff(cfg):
         )
     else:
         scheduler = None
-    if "ema" in cfg:
+    if cfg.get("use_ema", False):
         ema = ExponentialMovingAverage(model.parameters(), decay=cfg.get("ema_decay", 0.99))
     else:
         ema = None
