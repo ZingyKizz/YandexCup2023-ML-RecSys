@@ -46,6 +46,51 @@ class TaggingDataset(Dataset):
         return weights
 
 
+class WOTaggingDataset(Dataset):
+    def __init__(
+        self, df, track_idx2embeds, *, testing=False, weight_power=0.5, **kwargs
+    ):
+        self.track_idx2embeds = track_idx2embeds
+        self.testing = testing
+        self.df = self._preprocess(df)
+        self.weights = self._get_track_weights(self.df, weight_power)
+
+    def __len__(self):
+        return self.df.shape[0]
+
+    def __getitem__(self, idx):
+        row = self.df.iloc[idx]
+        track_idx = row.track
+        embeds = self.track_idx2embeds[track_idx]
+        target = -1
+        if self.testing:
+            return track_idx, embeds, target
+        tags = [int(x) for x in row.tags.split(",")]
+        target = np.zeros(NUM_TAGS)
+        target[tags] = 1
+        return track_idx, embeds, target
+
+    def _get_track_weights(self, df, weight_power):
+        if self.testing:
+            return None
+        w = df.copy()
+        w["tags"] = w["tags"].str.split(",")
+        w = w.explode("tags")
+        w["tag_cnt"] = w.groupby("tags").transform("count") / len(w)
+        w["tag_weight"] = 1 / np.power(w["tag_cnt"], weight_power)
+        res = df.merge(
+            w.groupby("track", as_index=False)["tag_weight"].mean(), on=["track"]
+        )
+        weights = torch.from_numpy(res["tag_weight"].to_numpy())
+        return weights
+
+    def _preprocess(self, df):
+        if self.testing:
+            return df
+        mask = df["tags"].str.split(",").str.len().between(2, 11)
+        return df.loc[mask].copy()
+
+
 class Collator:
     def __init__(self, max_len=None, *args, **kwargs):
         self.max_len = max_len
