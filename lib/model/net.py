@@ -3,7 +3,12 @@ import torch
 from transformers.models.bert import BertModel, BertConfig
 from transformers.models.deberta_v2 import DebertaV2Model, DebertaV2Config
 from lib.const import NUM_TAGS
-from lib.model.base import MeanPooling, ProjectionHead, smart_init_weights
+from lib.model.base import (
+    MeanPooling,
+    ProjectionHead,
+    smart_init_weights,
+    SelfAttention,
+)
 from lib.model.conv_1d import (
     CNN1DModel,
     LightCNN1DModel,
@@ -536,6 +541,36 @@ class TransNetwork23(nn.Module):
         )
 
     def forward(self, x, attention_mask, *args, **kwargs):
+        x = self.conv1d(x)
+        x = self.mp(x, attention_mask=attention_mask)
+        outs = self.fc(x)
+        return outs
+
+
+class TransNetwork24(nn.Module):
+    def __init__(
+        self,
+        channels,
+        hidden_dim=512,
+        num_classes=NUM_TAGS,
+        cnn_activation="relu",
+        cnn_dropout=0,
+    ):
+        super().__init__()
+        self.attn = SelfAttention(768)
+        self.conv1d = GemVeryLightCNN1DWithDepthMaxPoolModel(
+            channels, activation=cnn_activation, dropout=cnn_dropout
+        )
+        self.mp = MeanPooling()
+        self.fc = nn.Sequential(
+            ProjectionHead(
+                channels[-1][1], hidden_dim, dropout=0.3, residual_connection=True
+            ),
+            nn.Linear(hidden_dim, num_classes),
+        )
+
+    def forward(self, x, attention_mask, *args, **kwargs):
+        x = self.attn(x, attention_mask=attention_mask)
         x = self.conv1d(x)
         x = self.mp(x, attention_mask=attention_mask)
         outs = self.fc(x)
