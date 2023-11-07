@@ -4,6 +4,27 @@ from scipy.linalg import hadamard
 import math
 
 
+class SelfAttention(nn.Module):
+    def __init__(self, input_dim):
+        super().__init__()
+        self.input_dim = input_dim
+        self.query = nn.Linear(input_dim, input_dim)
+        self.key = nn.Linear(input_dim, input_dim)
+        self.value = nn.Linear(input_dim, input_dim)
+        self.softmax = nn.Softmax(dim=2)
+
+    def forward(self, x, attention_mask=None):
+        queries = self.query(x)
+        keys = self.key(x)
+        values = self.value(x)
+        scores = torch.bmm(queries, keys.transpose(1, 2)) / (self.input_dim ** 0.5)
+        attention = self.softmax(scores)
+        weighted = torch.bmm(attention, values)
+        if attention_mask is not None:
+            weighted = weighted * attention_mask.unsqueeze(-1).expand(weighted.size())
+        return weighted
+
+
 class MeanPooling(nn.Module):
     def forward(self, x, attention_mask):
         input_mask_expanded = attention_mask.unsqueeze(-1).expand(x.size()).float()
