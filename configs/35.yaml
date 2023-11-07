@@ -29,7 +29,7 @@ optimizer_params: {}
 
 scheduler: training.scheduler.Scheduler
 scheduler_params: {
-  num_training_steps: 9000,
+  num_training_steps: 12000,
   scheduler_name: "get_cosine_with_hard_restarts_schedule_with_warmup"
 }
 
@@ -38,7 +38,7 @@ cv_n_epochs: 30
 cv_min_score_to_save_predictions: 0.25
 
 use_solo: true
-solo_n_epochs: 25
+solo_n_epochs: 20
 solo_save_last_n_epochs: 3
 
 dataset: data.dataset.TaggingDataset
