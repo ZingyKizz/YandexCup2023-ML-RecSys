@@ -48,10 +48,18 @@ class TaggingDataset(Dataset):
 
 class WOTaggingDataset(Dataset):
     def __init__(
-        self, df, track_idx2embeds, *, testing=False, weight_power=0.5, **kwargs
+        self,
+        df,
+        track_idx2embeds,
+        *,
+        testing=False,
+        weight_power=0.5,
+        between_limitations=None,
+        **kwargs
     ):
         self.track_idx2embeds = track_idx2embeds
         self.testing = testing
+        self.between_limitations = between_limitations
         self.df = self._preprocess(df)
         self.weights = self._get_track_weights(self.df, weight_power)
 
@@ -85,9 +93,9 @@ class WOTaggingDataset(Dataset):
         return weights
 
     def _preprocess(self, df):
-        if self.testing:
+        if self.testing or (self.between_limitations is None):
             return df
-        mask = df["tags"].str.split(",").str.len().between(2, 10)
+        mask = df["tags"].str.split(",").str.len().between(*self.between_limitations)
         return df.loc[mask].copy()
 
 
@@ -154,6 +162,9 @@ def make_dataloader(
         track_idx2knn=track_idx2knn,
         testing=testing_dataset,
         weight_power=cfg.get("dataset_weight_power", 0.5),
+        between_limitations=cfg.get("dataset_between_limitations", (0, 10000))
+        if not testing_collator
+        else None,
     )
     sampler = None
     if cfg.get("dataset_sample_weights", False) and (not testing_collator):
