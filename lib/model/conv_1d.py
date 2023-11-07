@@ -5,15 +5,15 @@ from lib.model.gem import GeM
 
 class Conv1dBlock(nn.Module):
     def __init__(
-        self,
-        in_channels,
-        out_channels,
-        kernel_size=(5,),
-        stride=(1,),
-        padding=(2,),
-        skip_connection=False,
-        activation="relu",
-        dropout=0.0,
+            self,
+            in_channels,
+            out_channels,
+            kernel_size=(5,),
+            stride=(1,),
+            padding=(2,),
+            skip_connection=False,
+            activation="relu",
+            dropout=0.0,
     ):
         super().__init__()
         self.skip_connection = skip_connection
@@ -252,3 +252,33 @@ class GemVeryLightCNN1DModel(nn.Module):
             x = conv(x)
         x = torch.transpose(x, 1, 2)
         return x
+
+
+class GemVeryLightCNN1DWithDepthMaxPoolModel(nn.Module):
+    def __init__(self, channels, activation="relu", dropout=0.0):
+        super().__init__()
+        self.convolutions = nn.ModuleList(
+            [
+                nn.Sequential(
+                    Conv1dBlock(
+                        in_channels=in_channels,
+                        out_channels=out_channels,
+                        skip_connection=True,
+                        activation=activation,
+                        dropout=dropout,
+                    ),
+                    GeM(kernel_size=3),
+                )
+                for i, (in_channels, out_channels) in enumerate(channels)
+            ]
+        )
+
+    def forward(self, x):
+        x = torch.transpose(x, 1, 2)
+        hidden_states = []
+        for conv in self.convolutions:
+            x = conv(x)
+            hidden_states.append(x)
+        x_max = torch.max(torch.stack(hidden_states), dim=0)[0]
+        outs = torch.transpose(x + x_max, 1, 2)
+        return outs

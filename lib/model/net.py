@@ -10,6 +10,7 @@ from lib.model.conv_1d import (
     VeryLightCNN1DModel,
     GemLightCNN1DModel,
     GemVeryLightCNN1DModel,
+    GemVeryLightCNN1DWithDepthMaxPoolModel,
 )
 from lib.model.net_1d import Net1D
 from lib.model.resnet_1d import ResNet1D
@@ -509,5 +510,33 @@ class TransNetwork22(nn.Module):
         x = self.gru(x)[0]
         x = self.conv1d(x)
         x = x.mean(dim=1)
+        outs = self.fc(x)
+        return outs
+
+
+class TransNetwork23(nn.Module):
+    def __init__(
+        self,
+        channels,
+        hidden_dim=512,
+        num_classes=NUM_TAGS,
+        cnn_activation="relu",
+        cnn_dropout=0,
+    ):
+        super().__init__()
+        self.conv1d = GemVeryLightCNN1DWithDepthMaxPoolModel(
+            channels, activation=cnn_activation, dropout=cnn_dropout
+        )
+        self.mp = MeanPooling()
+        self.fc = nn.Sequential(
+            ProjectionHead(
+                channels[-1][1], hidden_dim, dropout=0.3, residual_connection=True
+            ),
+            nn.Linear(hidden_dim, num_classes),
+        )
+
+    def forward(self, x, attention_mask, *args, **kwargs):
+        x = self.conv1d(x)
+        x = self.mp(x, attention_mask=attention_mask)
         outs = self.fc(x)
         return outs
