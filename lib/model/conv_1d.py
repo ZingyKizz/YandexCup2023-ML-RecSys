@@ -5,15 +5,15 @@ from lib.model.gem import GeM
 
 class Conv1dBlock(nn.Module):
     def __init__(
-            self,
-            in_channels,
-            out_channels,
-            kernel_size=(5,),
-            stride=(1,),
-            padding=(2,),
-            skip_connection=False,
-            activation="relu",
-            dropout=0.0,
+        self,
+        in_channels,
+        out_channels,
+        kernel_size=(5,),
+        stride=(1,),
+        padding=(2,),
+        skip_connection=False,
+        activation="relu",
+        dropout=0.0,
     ):
         super().__init__()
         self.skip_connection = skip_connection

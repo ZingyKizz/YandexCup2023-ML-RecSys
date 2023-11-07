@@ -17,7 +17,7 @@ class SelfAttention(nn.Module):
         queries = self.query(x)
         keys = self.key(x)
         values = self.value(x)
-        scores = torch.bmm(queries, keys.transpose(1, 2)) / (self.input_dim ** 0.5)
+        scores = torch.bmm(queries, keys.transpose(1, 2)) / (self.input_dim**0.5)
         attention = self.softmax(scores)
         weighted = torch.bmm(attention, values)
         if attention_mask is not None:

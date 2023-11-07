@@ -92,7 +92,7 @@ class AsymmetricLoss(nn.Module):
 
 
 class Hill(nn.Module):
-    r""" Hill as described in the paper "Robust Loss Design for Multi-Label Learning with Missing Labels "
+    r"""Hill as described in the paper "Robust Loss Design for Multi-Label Learning with Missing Labels "
 
     .. math::
         Loss = y \times (1-p_{m})^\gamma\log(p_{m}) + (1-y) \times -(\lambda-p){p}^2
@@ -111,7 +111,13 @@ class Hill(nn.Module):
 
     """
 
-    def __init__(self, lamb: float = 1.5, margin: float = 1.0, gamma: float = 2.0, reduction: str = 'sum') -> None:
+    def __init__(
+        self,
+        lamb: float = 1.5,
+        margin: float = 1.0,
+        gamma: float = 2.0,
+        reduction: str = "sum",
+    ) -> None:
         super(Hill, self).__init__()
         self.lamb = lamb
         self.margin = margin
@@ -137,25 +143,25 @@ class Hill(nn.Module):
 
         # Focal margin for postive loss
         pt = (1 - pred_pos) * targets + (1 - targets)
-        focal_weight = pt ** self.gamma
+        focal_weight = pt**self.gamma
 
         # Hill loss calculation
         los_pos = targets * torch.log(pred_pos)
-        los_neg = (1 - targets) * -(self.lamb - pred_neg) * pred_neg ** 2
+        los_neg = (1 - targets) * -(self.lamb - pred_neg) * pred_neg**2
 
         loss = -(los_pos + los_neg)
         loss *= focal_weight
 
-        if self.reduction == 'mean':
+        if self.reduction == "mean":
             return loss.mean()
-        elif self.reduction == 'sum':
+        elif self.reduction == "sum":
             return loss.sum()
         else:
             return loss
 
 
 class SPLC(nn.Module):
-    r""" SPLC loss as described in the paper "Simple Loss Design for Multi-Label Learning with Missing Labels "
+    r"""SPLC loss as described in the paper "Simple Loss Design for Multi-Label Learning with Missing Labels "
 
     .. math::
         &L_{SPLC}^+ = loss^+(p)
@@ -181,14 +187,16 @@ class SPLC(nn.Module):
             ``'mean'``: the sum of the output will be divided by the number of
             elements in the output, ``'sum'``: the output will be summed. Default: ``'sum'``
 
-        """
+    """
 
-    def __init__(self,
-                 tau: float = 0.6,
-                 change_epoch: int = 1,
-                 margin: float = 1.0,
-                 gamma: float = 2.0,
-                 reduction: str = 'sum') -> None:
+    def __init__(
+        self,
+        tau: float = 0.6,
+        change_epoch: int = 1,
+        margin: float = 1.0,
+        gamma: float = 2.0,
+        reduction: str = "sum",
+    ) -> None:
         super(SPLC, self).__init__()
         self.tau = tau
         self.change_epoch = change_epoch
@@ -196,8 +204,9 @@ class SPLC(nn.Module):
         self.gamma = gamma
         self.reduction = reduction
 
-    def forward(self, logits: torch.Tensor, targets: torch.LongTensor,
-                epoch) -> torch.Tensor:
+    def forward(
+        self, logits: torch.Tensor, targets: torch.LongTensor, epoch
+    ) -> torch.Tensor:
         """
         call function as forward
 
@@ -215,14 +224,14 @@ class SPLC(nn.Module):
         # SPLC missing label correction
         if epoch >= self.change_epoch:
             targets = torch.where(
-                torch.sigmoid(logits) > self.tau,
-                torch.tensor(1).cuda(), targets)
+                torch.sigmoid(logits) > self.tau, torch.tensor(1).cuda(), targets
+            )
 
         pred = torch.sigmoid(logits)
 
         # Focal margin for postive loss
         pt = (1 - pred) * targets + pred * (1 - targets)
-        focal_weight = pt ** self.gamma
+        focal_weight = pt**self.gamma
 
         los_pos = targets * F.logsigmoid(logits)
         los_neg = (1 - targets) * F.logsigmoid(-logits)
@@ -230,9 +239,9 @@ class SPLC(nn.Module):
         loss = -(los_pos + los_neg)
         loss *= focal_weight
 
-        if self.reduction == 'mean':
+        if self.reduction == "mean":
             return loss.mean()
-        elif self.reduction == 'sum':
+        elif self.reduction == "sum":
             return loss.sum()
         else:
             return loss

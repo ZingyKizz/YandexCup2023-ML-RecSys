@@ -41,7 +41,9 @@ def run_cfg(config_path, files_mode=True):
             best_score = cfg.get("cv_min_score_to_save_predictions", 0.0)
             has_predict = False
             for epoch in tqdm(range(epochs)):
-                train_epoch(model, train_dataloader, criterion, optimizer, scheduler, ema=ema)
+                train_epoch(
+                    model, train_dataloader, criterion, optimizer, scheduler, ema=ema
+                )
                 score = validate_after_epoch(model, val_dataloader, ema=ema)
                 if not files_mode:
                     continue
@@ -83,7 +85,9 @@ def run_cfg(config_path, files_mode=True):
             print(torchinfo.summary(model))
         epochs = cfg.get("solo_n_epochs", 15)
         for epoch in tqdm(range(epochs)):
-            train_epoch(model, train_dataloader, criterion, optimizer, scheduler, ema=ema)
+            train_epoch(
+                model, train_dataloader, criterion, optimizer, scheduler, ema=ema
+            )
             if epochs - epoch <= cfg.get("solo_save_last_n_epochs", 1):
                 make_test_predictions(
                     model,
