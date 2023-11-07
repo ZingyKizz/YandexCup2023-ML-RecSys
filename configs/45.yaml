@@ -42,7 +42,7 @@ solo_n_epochs: 20
 solo_save_last_n_epochs: 3
 
 dataset: data.dataset.WOTaggingDataset
-dataset_between_limitations: [2, 6]
+dataset_between_limitations: [2, 8]
 collator: data.dataset.CollatorWithAug
 augmentations: {
   AddInversions: {
