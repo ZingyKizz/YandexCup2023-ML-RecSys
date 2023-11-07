@@ -550,27 +550,32 @@ class TransNetwork23(nn.Module):
 class TransNetwork24(nn.Module):
     def __init__(
         self,
-        channels,
-        hidden_dim=512,
+        cnn_params,
+        projection_params,
         num_classes=NUM_TAGS,
-        cnn_activation="relu",
-        cnn_dropout=0,
     ):
         super().__init__()
-        self.attn = SelfAttention(768)
+        channels = cnn_params["channels"]
+        hidden_dim = projection_params.get("hidden_dim", 768)
         self.conv1d = GemVeryLightCNN1DWithDepthMaxPoolModel(
-            channels, activation=cnn_activation, dropout=cnn_dropout
+            channels,
+            activation=cnn_params.get("activation", "relu"),
+            dropout=cnn_params.get("dropout", 0.0),
+            kernel_size=cnn_params.get("kernel_size", 5),
+            gem_kernel_size=cnn_params.get("gem_kernel_size", 3),
         )
         self.mp = MeanPooling()
         self.fc = nn.Sequential(
             ProjectionHead(
-                channels[-1][1], hidden_dim, dropout=0.3, residual_connection=True
+                channels[-1][1],
+                hidden_dim=hidden_dim,
+                dropout=projection_params.get("dropout", 0.3),
+                residual_connection=projection_params.get("residual_connection", True),
             ),
             nn.Linear(hidden_dim, num_classes),
         )
 
     def forward(self, x, attention_mask, *args, **kwargs):
-        x = self.attn(x, attention_mask=attention_mask)
         x = self.conv1d(x)
         x = self.mp(x, attention_mask=attention_mask)
         outs = self.fc(x)
