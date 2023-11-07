@@ -26,9 +26,13 @@ class TaggingDataset(Dataset):
         target = -1
         if self.testing:
             return track_idx, embeds, target
-        tags = [int(x) for x in row.tags.split(",")]
-        target = np.zeros(NUM_TAGS)
-        target[tags] = 1
+        tags = [float(x) for x in row.tags.split(",")]
+        if len(tags) != 256:
+            tags = [int(x) for x in tags]
+            target = np.zeros(NUM_TAGS)
+            target[tags] = 1
+        else:
+            target = np.asarray(tags)
         return track_idx, embeds, target
 
     def _get_track_weights(self, df, weight_power):
@@ -73,9 +77,13 @@ class WOTaggingDataset(Dataset):
         target = -1
         if self.testing:
             return track_idx, embeds, target
-        tags = [int(x) for x in row.tags.split(",")]
-        target = np.zeros(NUM_TAGS)
-        target[tags] = 1
+        tags = [float(x) for x in row.tags.split(",")]
+        if len(tags) != 256:
+            tags = [int(x) for x in tags]
+            target = np.zeros(NUM_TAGS)
+            target[tags] = 1
+        else:
+            target = np.asarray(tags)
         return track_idx, embeds, target
 
     def _get_track_weights(self, df, weight_power):
@@ -269,9 +277,13 @@ class KnnTaggingDataset(Dataset):
         target = -1
         if self.testing:
             return track_idx, (embeds, knn, length), target
-        tags = [int(x) for x in row.tags.split(",")]
-        target = np.zeros(NUM_TAGS)
-        target[tags] = 1
+        tags = [float(x) for x in row.tags.split(",")]
+        if len(tags) != 256:
+            tags = [int(x) for x in tags]
+            target = np.zeros(NUM_TAGS)
+            target[tags] = 1
+        else:
+            target = np.asarray(tags)
         return track_idx, (embeds, knn, length), target
 
     def _get_track_weights(self, df, weight_power):

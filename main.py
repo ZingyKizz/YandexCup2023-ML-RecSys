@@ -89,13 +89,35 @@ def run_cfg(config_path, files_mode=True):
                 model, train_dataloader, criterion, optimizer, scheduler, ema=ema
             )
             if epochs - epoch <= cfg.get("solo_save_last_n_epochs", 1):
-                make_test_predictions(
+                test_preds = make_test_predictions(
                     model,
                     test_dataloader,
                     path="predictions_test",
                     suffix=f"cfg={cfg_name}__fold_idx=-1__epoch={epoch}__score=-1",
                     ema=ema,
                 )
+        if cfg.get("distillation", False):
+            dataloader = make_dataloader(
+                test_preds.rename(columns={"prediction": "tags"}),
+                track_idx2embeds,
+                track_idx2knn,
+                cfg,
+                testing_dataset=False,
+                testing_collator=False,
+            )
+            for epoch in tqdm(range(2)):
+                for g in optimizer.param_groups:
+                    g["lr"] = 0.000001
+                train_epoch(
+                    model, dataloader, criterion, optimizer, scheduler=None, ema=ema
+                )
+            make_test_predictions(
+                model,
+                test_dataloader,
+                path="predictions_test",
+                suffix=f"cfg={cfg_name}__fold_idx=-2__epoch={epoch}__score=-2",
+                ema=ema,
+            )
 
 
 def main(config_paths, files_mode=True):
