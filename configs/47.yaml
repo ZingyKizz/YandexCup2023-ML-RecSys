@@ -1,6 +1,6 @@
 name: "47"
 
-seed: 11
+seed: 90
 data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
 n_splits: 3
 
@@ -34,7 +34,7 @@ scheduler_params: {
 }
 
 use_cv: true
-cv_n_epochs: 30
+cv_n_epochs: 22
 cv_min_score_to_save_predictions: 0.25
 
 use_solo: true
@@ -42,7 +42,7 @@ solo_n_epochs: 20
 solo_save_last_n_epochs: 3
 
 dataset: data.dataset.WOTaggingDataset
-dataset_between_limitations: [1, 9]
+dataset_between_limitations: [1, 10]
 collator: data.dataset.CollatorWithAug
 augmentations: {
   AddInversions: {

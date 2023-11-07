@@ -1,6 +1,6 @@
 name: "44"
 
-seed: 11
+seed: 15
 data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
 n_splits: 3
 
@@ -34,7 +34,7 @@ scheduler_params: {
 }
 
 use_cv: true
-cv_n_epochs: 30
+cv_n_epochs: 22
 cv_min_score_to_save_predictions: 0.25
 
 use_solo: true
