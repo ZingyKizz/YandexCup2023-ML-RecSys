@@ -255,7 +255,7 @@ class GemVeryLightCNN1DModel(nn.Module):
 
 
 class GemVeryLightCNN1DWithDepthMaxPoolModel(nn.Module):
-    def __init__(self, channels, activation="relu", dropout=0.0):
+    def __init__(self, channels, activation="relu", dropout=0.0, conv_kernel_size=5, gem_kernel_size=3):
         super().__init__()
         self.convolutions = nn.ModuleList(
             [
@@ -266,8 +266,10 @@ class GemVeryLightCNN1DWithDepthMaxPoolModel(nn.Module):
                         skip_connection=True,
                         activation=activation,
                         dropout=dropout,
+                        kernel_size=conv_kernel_size,
+                        padding=conv_kernel_size // 2,
                     ),
-                    GeM(kernel_size=3),
+                    GeM(kernel_size=gem_kernel_size),
                 )
                 for i, (in_channels, out_channels) in enumerate(channels)
             ]
