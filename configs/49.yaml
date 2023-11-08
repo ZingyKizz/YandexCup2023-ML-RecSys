@@ -1,6 +1,6 @@
 name: "49"
 
-seed: 88
+seed: 43
 data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
 n_splits: 3
 
@@ -14,9 +14,9 @@ model_params: {
     encoder_cfg: {
         vocab_size: 1,
         hidden_size: 768,
-        num_hidden_layers: 6,
+        num_hidden_layers: 12,
         num_attention_heads: 12,
-        intermediate_size: 3072,
+        intermediate_size: 2304,
         hidden_act: "gelu",
         hidden_dropout_prob: 0.0,
         attention_probs_dropout_prob: 0.0,
@@ -24,7 +24,7 @@ model_params: {
         type_vocab_size: 0,
         initializer_range: 0.02,
         layer_norm_eps: 0.0000001,
-        relative_attention: true,
+        relative_attention: false,
         max_relative_positions: -1,
         pad_token_id: 0,
         position_biased_input: true,
@@ -52,14 +52,14 @@ scheduler_params: {
 
 use_cv: true
 cv_n_epochs: 22
-cv_min_score_to_save_predictions: 0.245
+cv_min_score_to_save_predictions: 0.235
 
 use_solo: true
 solo_n_epochs: 20
 solo_save_last_n_epochs: 3
 
 dataset: data.dataset.WOTaggingDataset
-dataset_between_limitations: [1, 100]
+dataset_between_limitations: [2, 8]
 collator: data.dataset.CollatorWithAug
 augmentations: {
   AddInversions: {
@@ -73,11 +73,6 @@ augmentations: {
   MixUp: {
     proba: 0.01
   },
-  TrueMixUp: {
-    proba: 1.0,
-    alpha: 0.5,
-    mixups_per_batch: 5
-  }
 }
 
 use_ema: true
