@@ -96,7 +96,7 @@ def make_test_predictions(model, test_dataloader, path=None, suffix=None, ema=No
         os.makedirs(path, exist_ok=True)
         name = os.path.join(path, name)
     predictions_df.to_csv(name, index=False)
-    return predictions
+    return predictions_df
 
 
 def make_val_test_predictions(
