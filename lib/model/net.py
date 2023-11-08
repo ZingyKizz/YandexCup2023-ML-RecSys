@@ -580,3 +580,72 @@ class TransNetwork24(nn.Module):
         x = self.mp(x, attention_mask=attention_mask)
         outs = self.fc(x)
         return outs
+
+
+class TransNetwork25(nn.Module):
+    def __init__(
+        self,
+        gru_params,
+        num_classes=NUM_TAGS,
+    ):
+        super().__init__()
+        self.bn = nn.BatchNorm1d(768)
+        self.gru = nn.GRU(
+            input_size=gru_params["input_size"],
+            hidden_size=gru_params["hidden_size"],
+            batch_first=True,
+            num_layers=1,
+        )
+        self.fc = nn.Linear(gru_params["hidden_size"], num_classes)
+
+    def forward(self, x, *args, **kwargs):
+        x = self.bn(x.transpose(1, 2)).transpose(1, 2)
+        x = self.gru(x)[1].squeeze(0)
+        outs = self.fc(x)
+        return outs
+
+
+class TransNetwork26(nn.Module):
+    def __init__(
+        self,
+        gru_params,
+        num_classes=NUM_TAGS,
+    ):
+        super().__init__()
+        self.bn = nn.BatchNorm1d(768)
+        self.gru = nn.GRU(
+            input_size=gru_params["input_size"],
+            hidden_size=gru_params["hidden_size"],
+            batch_first=True,
+            num_layers=4,
+        )
+        self.fc = nn.Linear(gru_params["hidden_size"], num_classes)
+
+    def forward(self, x, *args, **kwargs):
+        x = self.bn(x.transpose(1, 2)).transpose(1, 2)
+        x = self.gru(x)[1].mean(dim=0)
+        outs = self.fc(x)
+        return outs
+
+
+class TransNetwork27(nn.Module):
+    def __init__(
+        self,
+        gru_params,
+        num_classes=NUM_TAGS,
+    ):
+        super().__init__()
+        self.bn = nn.BatchNorm1d(768)
+        self.gru = nn.LSTM(
+            input_size=gru_params["input_size"],
+            hidden_size=gru_params["hidden_size"],
+            batch_first=True,
+            num_layers=4,
+        )
+        self.fc = nn.Linear(gru_params["hidden_size"], num_classes)
+
+    def forward(self, x, *args, **kwargs):
+        x = self.bn(x.transpose(1, 2)).transpose(1, 2)
+        x = self.gru(x)[1].mean(dim=0)
+        outs = self.fc(x)
+        return outs
