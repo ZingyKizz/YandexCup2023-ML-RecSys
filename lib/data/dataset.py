@@ -101,7 +101,11 @@ class WOTaggingDataset(Dataset):
         return weights
 
     def _preprocess(self, df):
-        if self.testing or (self.between_limitations is None):
+        if (
+            self.testing
+            or (self.between_limitations is None)
+            or (df["tags"].str.split(",").str.len().min() == 256)
+        ):
             return df
         mask = df["tags"].str.split(",").str.len().between(*self.between_limitations)
         return df.loc[mask].copy()
@@ -174,7 +178,7 @@ def make_dataloader(
             cfg.get("dataset_between_limitations", (0, 10000))
             if not testing_collator
             else None
-        )
+        ),
     )
     sampler = None
     if cfg.get("dataset_sample_weights", False) and (not testing_collator):
