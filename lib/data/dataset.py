@@ -170,9 +170,11 @@ def make_dataloader(
         track_idx2knn=track_idx2knn,
         testing=testing_dataset,
         weight_power=cfg.get("dataset_weight_power", 0.5),
-        between_limitations=cfg.get("dataset_between_limitations", (0, 10000))
-        if not testing_collator
-        else None,
+        between_limitations=(
+            cfg.get("dataset_between_limitations", (0, 10000))
+            if not testing_collator
+            else None
+        )
     )
     sampler = None
     if cfg.get("dataset_sample_weights", False) and (not testing_collator):
