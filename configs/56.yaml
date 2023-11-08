@@ -10,8 +10,8 @@ max_len: 64
 model: model.net.TransNetwork26
 model_params: {
     gru_params: {
-      input_dim: 768,
-      hidden_dim: 512
+      input_size: 768,
+      hidden_size: 512
     }
 }
 
