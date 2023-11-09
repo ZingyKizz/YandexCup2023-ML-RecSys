@@ -2,7 +2,7 @@ name: "59"
 
 seed: 16
 data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
-n_splits: 3
+n_splits: 4
 
 batch_size: 70
 max_len: 128
@@ -10,17 +10,15 @@ max_len: 128
 model: model.net.TransNetwork31
 model_params: {
     cnn_params: {
-      channels: [[768, 1200], [1200, 1536], [1536, 1200], [1200, 768]],
+      channels: [[768, 1200], [1200, 1200], [1200, 1200], [1200, 768]],
       activation: "relu",
       dropout: 0.05
     }
 }
 
 
-criterion: training.criterion.AsymmetricLoss
-criterion_params: {
-    gamma_neg: 8.0
-}
+criterion: training.criterion.BCEWithLogitsLoss
+criterion_params: {}
 
 optimizer: training.optimizer.Adam
 lr: 0.000015
@@ -35,7 +33,7 @@ scheduler_params: {
 
 use_cv: true
 cv_n_epochs: 20
-cv_min_score_to_save_predictions: 0.23
+cv_min_score_to_save_predictions: 0.255
 
 use_solo: true
 solo_n_epochs: 22

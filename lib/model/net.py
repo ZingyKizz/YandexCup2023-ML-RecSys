@@ -17,6 +17,7 @@ from lib.model.conv_1d import (
     GemLightCNN1DModel,
     GemVeryLightCNN1DModel,
     GemVeryLightCNN1DWithDepthMaxPoolModel,
+    AdaptiveGemVeryLightCNN1DWithDepthMaxPoolModel,
 )
 from lib.model.net_1d import Net1D
 from lib.model.resnet_1d import ResNet1D
@@ -761,3 +762,26 @@ class TransNetwork31(nn.Module):
         outs = self.fc(z)
         return outs
 
+
+class TransNetwork32(nn.Module):
+    def __init__(
+        self, cnn_params, input_dim=768, num_classes=NUM_TAGS
+    ):
+        super().__init__()
+        self.knn_linear = nn.Sequential(
+            nn.Linear(72, input_dim),
+            nn.SiLU(),
+            nn.LayerNorm(input_dim),
+        )
+        self.conv1d = AdaptiveGemVeryLightCNN1DWithDepthMaxPoolModel(
+            cnn_params["channels"], activation=cnn_params["activation"], dropout=cnn_params["dropout"]
+        )
+        self.fc = nn.Linear(cnn_params["channels"][-1][1], num_classes)
+
+    def forward(self, embeds, attention_mask, knn_embeds, length, *args, **kwargs):
+        x = self.conv1d(embeds)
+        y = self.knn_linear(knn_embeds)
+        y = y.max(dim=1)[0]
+        z = x + y
+        outs = self.fc(z)
+        return outs

@@ -25,3 +25,24 @@ class GeM(nn.Module):
             padding=self.kernel_size // 2,
             stride=1,
         ).pow(1.0 / p)
+
+
+class AdaptiveGeM(nn.Module):
+    def __init__(self, output_size, p=3, eps=1e-6):
+        super().__init__()
+        self.p = nn.Parameter(torch.ones(1) * p)
+        self.eps = eps
+        self.output_size = output_size
+
+    def forward(self, x):
+        input_size = x.size(2)
+        stride = (input_size // self.output_size)
+        kernel_size = input_size - (self.output_size - 1) * stride
+        padding = 0
+        out = F.avg_pool1d(
+            x.clamp(min=self.eps).pow(self.p),
+            kernel_size,
+            padding=padding,
+            stride=stride,
+        ).pow(1.0 / self.p)
+        return out

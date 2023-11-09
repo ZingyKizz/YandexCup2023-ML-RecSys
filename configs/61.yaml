@@ -1,13 +1,13 @@
-name: "58"
+name: "61"
 
-seed: 320
+seed: 2222
 data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
 n_splits: 5
 
 batch_size: 70
 max_len: 128
 
-model: model.net.TransNetwork30
+model: model.net.TransNetwork32
 model_params: {
     cnn_params: {
       channels: [[768, 1200], [1200, 1536], [1536, 1200], [1200, 768]],
@@ -19,7 +19,7 @@ model_params: {
 
 criterion: training.criterion.AsymmetricLoss
 criterion_params: {
-    gamma_neg: 2.0
+    gamma_neg: 3.0
 }
 
 optimizer: training.optimizer.Adam
@@ -45,7 +45,7 @@ dataset: data.dataset.KnnTaggingDataset
 collator: data.dataset.KnnCollatorWithAug
 augmentations: {
   AddInversions: {
-    proba: 0.05,
+    proba: 1,
     p: 0.1,
   },
   AddNoise: {
@@ -53,12 +53,12 @@ augmentations: {
     noise: 0.04
   },
   MixUp: {
-    proba: 0.06
+    proba: 0.1
   }
 }
 knn_data: true
 
 use_ema: true
-ema_decay: 0.995
+ema_decay: 0.98
 
 distillation: true

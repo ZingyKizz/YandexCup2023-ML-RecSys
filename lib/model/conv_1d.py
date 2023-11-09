@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from lib.model.gem import GeM
+from lib.model.gem import GeM, AdaptiveGeM
 
 
 class Conv1dBlock(nn.Module):
@@ -285,4 +285,48 @@ class GemVeryLightCNN1DWithDepthMaxPoolModel(nn.Module):
             hidden_states.append(x)
         x_max = torch.max(torch.stack(hidden_states), dim=0)[0]
         outs = torch.transpose(x + x_max, 1, 2)
+        return outs
+
+
+class AdaptiveGemVeryLightCNN1DWithDepthMaxPoolModel(nn.Module):
+    def __init__(
+        self, channels, activation="relu", dropout=0.0, kernel_size=5, gem_output_size=3
+    ):
+        super().__init__()
+        self.convolutions = nn.ModuleList(
+            [
+                nn.Sequential(
+                    Conv1dBlock(
+                        in_channels=in_channels,
+                        out_channels=out_channels,
+                        skip_connection=True,
+                        activation=activation,
+                        dropout=dropout,
+                        kernel_size=kernel_size,
+                        padding=kernel_size // 2,
+                    ),
+                    AdaptiveGeM(output_size=gem_output_size),
+                )
+                for in_channels, out_channels in channels
+            ]
+        )
+        self.intermediate_projections = nn.ModuleList(
+            [
+                nn.Sequential(
+                    nn.Linear(out_channels, channels[-1][1]),
+                    nn.SiLU()
+                )
+                for _, out_channels in channels
+            ]
+        )
+
+    def forward(self, x):
+        x = torch.transpose(x, 1, 2)
+        hidden_states = []
+        for conv, proj in zip(self.convolutions, self.intermediate_projections):
+            x = conv(x)
+            y = proj(x.transpose(1, 2)).transpose(1, 2)
+            hidden_states.append(y)
+        y_max = torch.max(torch.stack(hidden_states), dim=0)[0]
+        outs = torch.transpose(x + y_max, 1, 2).mean(dim=1)
         return outs
