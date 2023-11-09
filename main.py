@@ -25,7 +25,7 @@ def run_cfg(config_path, files_mode=True):
         track_idx2knn,
         cfg,
         testing_dataset=True,
-        testing_collator=True,
+        testing_collator=not cfg.get("test_augmentations", False),
     )
     model_info_was_printed = False
     if cfg.get("use_cv", True):
