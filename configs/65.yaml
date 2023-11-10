@@ -41,7 +41,26 @@ use_solo: true
 solo_n_epochs: 20
 solo_save_last_n_epochs: 2
 
-dataset: data.dataset.TaggingDataset
-collator: data.dataset.Collator
+dataset: data.dataset.KnnTaggingDataset
+collator: data.dataset.KnnCollatorWithAug
+augmentations: {
+  AddInversions: {
+    proba: 1,
+    p: 0.1,
+  },
+  AddNoise: {
+    proba: 0.03,
+    noise: 0.04
+  },
+  MixUp: {
+    proba: 0.2
+  }
+}
+knn_data: true
 
 use_ema: true
+ema_decay: 0.98
+
+distillation: true
+
+test_augmentations: true
