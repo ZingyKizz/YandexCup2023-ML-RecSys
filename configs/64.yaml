@@ -1,0 +1,66 @@
+name: "64"
+
+seed: 1024
+data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
+n_splits: 3
+
+batch_size: 90
+max_len: 114
+
+model: model.net.TransNetwork30
+model_params: {
+    cnn_params: {
+      channels: [[768, 64], [64, 256], [256, 512], [512, 768]],
+      activation: "leaky_relu",
+      dropout: 0.02
+    }
+}
+
+
+criterion: training.criterion.AsymmetricLoss
+criterion_params: {
+    gamma_neg: 4.0
+}
+
+optimizer: training.optimizer.Adam
+lr: 0.000015
+lr_alpha: 30
+optimizer_params: {}
+
+scheduler: training.scheduler.Scheduler
+scheduler_params: {
+  num_training_steps: 9000,
+  scheduler_name: "get_cosine_with_hard_restarts_schedule_with_warmup"
+}
+
+use_cv: true
+cv_n_epochs: 22
+cv_min_score_to_save_predictions: 0.24
+
+use_solo: true
+solo_n_epochs: 20
+solo_save_last_n_epochs: 3
+
+dataset: data.dataset.KnnTaggingDataset
+collator: data.dataset.KnnCollatorWithAug
+augmentations: {
+  AddInversions: {
+    proba: 1,
+    p: 0.1,
+  },
+  AddNoise: {
+    proba: 0.03,
+    noise: 0.04
+  },
+  MixUp: {
+    proba: 0.2
+  }
+}
+knn_data: true
+
+use_ema: true
+ema_decay: 0.98
+
+distillation: true
+
+test_augmentations: true
