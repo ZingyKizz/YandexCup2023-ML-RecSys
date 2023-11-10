@@ -63,4 +63,4 @@ ema_decay: 0.98
 
 distillation: true
 
-test_augmentations: true
+test_augmentations: false
