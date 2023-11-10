@@ -1,0 +1,48 @@
+name: "66"
+
+seed: 323
+data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
+n_splits: 3
+
+batch_size: 90
+max_len: 114
+
+model: model.net.TransNetwork30
+model_params: {
+    cnn_params: {
+      channels: [[768, 64], [64, 256], [256, 512], [512, 768]],
+      activation: "leaky_relu",
+      dropout: 0.02
+    }
+}
+
+
+criterion: training.criterion.FocalLoss
+criterion_params: {
+    gamma: 2,
+    class_weights: [2.3, 2.4, 3.3, 3.7, 4.6, 3.7, 3.5, 4.8, 4.8, 3.9, 4.9, 4.3, 4.3, 4.8, 5.3, 4.5, 5.2, 4.7, 5.0, 5.2, 5.4, 4.9, 5.3, 4.1, 5.3, 5.0, 5.2, 5.7, 4.6, 5.2, 5.4, 5.1, 5.1, 5.5, 5.9, 4.6, 6.0, 5.3, 5.6, 5.3, 5.4, 5.8, 5.9, 4.8, 5.5, 5.4, 5.6, 5.2, 5.8, 5.9, 5.4, 6.0, 5.8, 5.9, 5.5, 5.8, 5.9, 5.9, 5.6, 6.0, 5.7, 6.4, 5.6, 5.7, 5.4, 5.9, 6.0, 6.1, 5.8, 6.0, 5.6, 6.1, 6.0, 5.7, 5.7, 5.8, 5.9, 5.9, 6.1, 6.4, 6.1, 5.6, 5.9, 5.8, 6.0, 5.8, 5.9, 5.9, 6.1, 5.8, 6.0, 6.4, 5.8, 5.9, 6.2, 5.8, 5.7, 5.9, 6.0, 5.6, 6.2, 5.9, 5.9, 5.8, 6.2, 6.3, 6.4, 6.3, 6.1, 6.3, 6.2, 6.2, 5.7, 6.2, 6.3, 6.3, 6.1, 5.8, 6.0, 6.0, 6.4, 6.0, 6.0, 5.9, 6.2, 6.4, 6.4, 6.1, 6.5, 6.1, 6.5, 6.2, 6.5, 6.2, 6.1, 6.3, 6.8, 6.1, 6.1, 6.6, 6.6, 6.3, 6.4, 6.0, 6.2, 6.1, 6.3, 6.6, 6.7, 6.4, 6.3, 6.0, 6.7, 6.4, 6.4, 6.4, 6.7, 6.2, 6.2, 6.5, 6.3, 6.4, 6.4, 6.6, 6.3, 6.5, 6.7, 6.3, 6.3, 6.2, 6.4, 6.7, 6.3, 6.2, 6.3, 6.3, 6.6, 6.2, 6.2, 6.8, 6.4, 6.7, 6.5, 6.3, 6.8, 6.5, 6.4, 6.4, 6.7, 6.5, 6.6, 6.3, 6.3, 6.7, 6.7, 6.4, 6.5, 6.6, 6.4, 6.7, 6.8, 6.4, 6.5, 6.6, 6.4, 6.6, 6.5, 6.5, 6.7, 6.6, 6.7, 6.9, 6.6, 6.7, 6.5, 6.5, 6.7, 6.6, 6.5, 6.6, 6.6, 6.6, 6.8, 6.6, 6.6, 6.6, 6.8, 6.5, 6.5, 6.8, 6.7, 6.7, 6.6, 6.7, 6.5, 6.9, 6.7, 6.7, 6.9, 6.6, 6.7, 6.6, 6.8, 6.7, 6.6, 6.8, 6.6, 6.7, 6.8, 6.6, 6.8, 6.7, 6.6, 6.8, 6.8, 6.7]
+}
+
+optimizer: training.optimizer.Adam
+lr: 0.000015
+lr_alpha: 30
+optimizer_params: {}
+
+scheduler: training.scheduler.Scheduler
+scheduler_params: {
+  num_training_steps: 10000,
+  scheduler_name: "get_cosine_with_hard_restarts_schedule_with_warmup"
+}
+
+use_cv: true
+cv_n_epochs: 22
+cv_min_score_to_save_predictions: 0.23
+
+use_solo: true
+solo_n_epochs: 20
+solo_save_last_n_epochs: 2
+
+dataset: data.dataset.TaggingDataset
+collator: data.dataset.Collator
+
+use_ema: true
