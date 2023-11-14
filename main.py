@@ -1,5 +1,6 @@
 from lib.data.s3 import load_data
 from tqdm import tqdm
+import click
 import torchinfo
 from lib.training.utils import (
     train_epoch,
@@ -125,5 +126,11 @@ def main(config_paths, files_mode=True):
         run_cfg(config_path, files_mode)
 
 
+@click.command()
+@click.option("--cfg_path", "-cfg", help="config path", required=True)
+def training_demo(cfg_path):
+    main([cfg_path])
+
+
 if __name__ == "__main__":
-    main(["configs/42.yaml"])
+    training_demo()
