@@ -1,4 +1,4 @@
-# YandexCup2023-ML-RecSys
+# YandexCup2023-ML-RecSys 5th place solution
 
 ## Шаги для запуска решения
 * Склонировать репозиторий
