@@ -312,10 +312,7 @@ class AdaptiveGemVeryLightCNN1DWithDepthMaxPoolModel(nn.Module):
         )
         self.intermediate_projections = nn.ModuleList(
             [
-                nn.Sequential(
-                    nn.Linear(out_channels, channels[-1][1]),
-                    nn.SiLU()
-                )
+                nn.Sequential(nn.Linear(out_channels, channels[-1][1]), nn.SiLU())
                 for _, out_channels in channels
             ]
         )

@@ -36,7 +36,7 @@ class AdaptiveGeM(nn.Module):
 
     def forward(self, x):
         input_size = x.size(2)
-        stride = (input_size // self.output_size)
+        stride = input_size // self.output_size
         kernel_size = input_size - (self.output_size - 1) * stride
         padding = 0
         out = F.avg_pool1d(

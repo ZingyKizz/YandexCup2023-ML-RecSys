@@ -446,8 +446,6 @@ class TransNetwork17(nn.Module):
         return outs
 
 
-
-
 class TransNetwork21(nn.Module):
     def __init__(
         self,
@@ -683,9 +681,7 @@ class TransNetwork29(nn.Module):
 
 
 class TransNetwork30(nn.Module):
-    def __init__(
-        self, cnn_params, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS
-    ):
+    def __init__(self, cnn_params, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS):
         super().__init__()
         self.knn_linear = nn.Sequential(
             nn.Linear(72, input_dim // 2),
@@ -695,7 +691,9 @@ class TransNetwork30(nn.Module):
         )
         self.mp = MeanPooling()
         self.conv1d = GemVeryLightCNN1DModel(
-            cnn_params["channels"], activation=cnn_params["activation"], dropout=cnn_params["dropout"]
+            cnn_params["channels"],
+            activation=cnn_params["activation"],
+            dropout=cnn_params["dropout"],
         )
         self.lin = ProjectionHead(
             768, hidden_dim, dropout=0.3, residual_connection=True
@@ -714,9 +712,7 @@ class TransNetwork30(nn.Module):
 
 
 class TransNetwork31(nn.Module):
-    def __init__(
-        self, cnn_params, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS
-    ):
+    def __init__(self, cnn_params, input_dim=768, hidden_dim=512, num_classes=NUM_TAGS):
         super().__init__()
         self.knn_linear = nn.Sequential(
             nn.Linear(72, input_dim),
@@ -725,7 +721,9 @@ class TransNetwork31(nn.Module):
         )
         self.mp = MeanPooling()
         self.conv1d = GemVeryLightCNN1DModel(
-            cnn_params["channels"], activation=cnn_params["activation"], dropout=cnn_params["dropout"]
+            cnn_params["channels"],
+            activation=cnn_params["activation"],
+            dropout=cnn_params["dropout"],
         )
         self.lin = ProjectionHead(
             768, hidden_dim, dropout=0.3, residual_connection=True
@@ -746,9 +744,7 @@ class TransNetwork31(nn.Module):
 
 
 class TransNetwork32(nn.Module):
-    def __init__(
-        self, cnn_params, input_dim=768, num_classes=NUM_TAGS
-    ):
+    def __init__(self, cnn_params, input_dim=768, num_classes=NUM_TAGS):
         super().__init__()
         self.knn_linear = nn.Sequential(
             nn.Linear(72, input_dim),
@@ -756,7 +752,9 @@ class TransNetwork32(nn.Module):
             nn.LayerNorm(input_dim),
         )
         self.conv1d = AdaptiveGemVeryLightCNN1DWithDepthMaxPoolModel(
-            cnn_params["channels"], activation=cnn_params["activation"], dropout=cnn_params["dropout"]
+            cnn_params["channels"],
+            activation=cnn_params["activation"],
+            dropout=cnn_params["dropout"],
         )
         self.fc = nn.Linear(cnn_params["channels"][-1][1], num_classes)
 
