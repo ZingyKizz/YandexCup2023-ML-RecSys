@@ -1,0 +1,81 @@
+name: "49"
+
+seed: 43
+data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
+n_splits: 3
+
+batch_size: 70
+max_len: 128
+
+model: model.net.TransNetwork8
+model_params: {
+    input_dim: 768,
+    hidden_dim: 512,
+    encoder_cfg: {
+        vocab_size: 1,
+        hidden_size: 768,
+        num_hidden_layers: 12,
+        num_attention_heads: 12,
+        intermediate_size: 2304,
+        hidden_act: "gelu",
+        hidden_dropout_prob: 0.0,
+        attention_probs_dropout_prob: 0.0,
+        max_position_embeddings: 128,
+        type_vocab_size: 0,
+        initializer_range: 0.02,
+        layer_norm_eps: 0.0000001,
+        relative_attention: false,
+        max_relative_positions: -1,
+        pad_token_id: 0,
+        position_biased_input: true,
+        pos_att_type: null,
+    }
+}
+
+
+criterion: training.criterion.AsymmetricLoss
+criterion_params: {
+    gamma_neg: 8.0,
+    clip: 0.0,
+}
+
+optimizer: training.optimizer.Adam
+lr: 0.000015
+lr_alpha: 30
+optimizer_params: {}
+
+scheduler: training.scheduler.Scheduler
+scheduler_params: {
+  num_training_steps: 12000,
+  scheduler_name: "get_cosine_with_hard_restarts_schedule_with_warmup"
+}
+
+use_cv: true
+cv_n_epochs: 22
+cv_min_score_to_save_predictions: 0.235
+
+use_solo: true
+solo_n_epochs: 20
+solo_save_last_n_epochs: 3
+
+dataset: data.dataset.WOTaggingDataset
+dataset_between_limitations: [2, 8]
+collator: data.dataset.CollatorWithAug
+augmentations: {
+  AddInversions: {
+    proba: 0.5,
+    p: 0.1,
+  },
+  AddNoise: {
+    proba: 0.03,
+    noise: 0.02
+  },
+  MixUp: {
+    proba: 0.01
+  },
+}
+
+use_ema: true
+ema_decay: 0.995
+
+distillation: true

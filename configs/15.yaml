@@ -1,0 +1,42 @@
+name: "15"
+
+seed: 11
+data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
+n_splits: 3
+
+batch_size: 70
+max_len: 128
+
+model: model.net.TransNetwork10
+model_params: {
+    input_dim: 768,
+    hidden_dim: 512,
+}
+
+
+criterion: training.criterion.AsymmetricLoss
+criterion_params: {
+    gamma_neg: 8.0
+}
+
+optimizer: training.optimizer.Adam
+lr: 0.0003
+lr_alpha: 1
+optimizer_params: {}
+
+scheduler: training.scheduler.Scheduler
+scheduler_params: {
+  num_training_steps: 9000,
+  scheduler_name: "get_cosine_with_hard_restarts_schedule_with_warmup"
+}
+
+use_cv: true
+cv_n_epochs: 50
+cv_min_score_to_save_predictions: 0.247
+
+use_solo: false
+solo_n_epochs: 20
+solo_save_last_n_epochs: 3
+
+dataset: data.dataset.TaggingDataset
+collator: data.dataset.Collator

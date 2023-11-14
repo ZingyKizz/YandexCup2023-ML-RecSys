@@ -1,0 +1,61 @@
+name: "11"
+
+seed: 11
+data_path: "/home/jupyter/mnt/s3/rnd-shared/projects/yandex_cup_2023/ML/RecSys/input_data/"
+n_splits: 3
+
+batch_size: 64
+max_len: 32
+
+model: model.net.TransNetwork8
+model_params: {
+    input_dim: 768,
+    hidden_dim: 512,
+    encoder_cfg: {
+        vocab_size: 1,
+        hidden_size: 768,
+        num_hidden_layers: 12,
+        num_attention_heads: 12,
+        intermediate_size: 3072,
+        hidden_act: "gelu",
+        hidden_dropout_prob: 0.0,
+        attention_probs_dropout_prob: 0.0,
+        max_position_embeddings: 32,
+        type_vocab_size: 0,
+        initializer_range: 0.02,
+        layer_norm_eps: 0.0000001,
+        relative_attention: false,
+        max_relative_positions: -1,
+        pad_token_id: 0,
+        position_biased_input: true,
+        pos_att_type: null,
+    }
+}
+
+
+criterion: training.criterion.FocalLoss
+criterion_params: {
+    gamma: 0.8
+}
+
+optimizer: training.optimizer.AdamW
+lr: 0.000015
+lr_alpha: 30
+optimizer_params: {}
+
+scheduler: training.scheduler.Scheduler
+scheduler_params: {
+  num_training_steps: 10000,
+  scheduler_name: "get_cosine_with_hard_restarts_schedule_with_warmup"
+}
+
+use_cv: true
+cv_n_epochs: 18
+cv_min_score_to_save_predictions: 0.23
+
+use_solo: true
+solo_n_epochs: 13
+solo_save_last_n_epochs: 3
+
+dataset: data.dataset.TaggingDataset
+collator: data.dataset.RandomMomentCollator

@@ -1,0 +1,6 @@
+/.env
+/predictions/
+/submissions/
+/predictions_val/
+/predictions_test/
+/second_stage/
