@@ -19,8 +19,6 @@ from lib.model.conv_1d import (
     GemVeryLightCNN1DWithDepthMaxPoolModel,
     AdaptiveGemVeryLightCNN1DWithDepthMaxPoolModel,
 )
-from lib.model.net_1d import Net1D
-from lib.model.resnet_1d import ResNet1D
 
 
 class Network(nn.Module):
@@ -448,22 +446,6 @@ class TransNetwork17(nn.Module):
         return outs
 
 
-class TransNetwork18(nn.Module):
-    def __init__(self, **params):
-        super().__init__()
-        self.model = Net1D(**params)
-
-    def forward(self, x, *args, **kwargs):
-        return self.model(x.transpose(1, 2))
-
-
-class TransNetwork19(nn.Module):
-    def __init__(self, **params):
-        super().__init__()
-        self.model = ResNet1D(**params)
-
-    def forward(self, x, *args, **kwargs):
-        return self.model(x.transpose(1, 2))
 
 
 class TransNetwork21(nn.Module):
